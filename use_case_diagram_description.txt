@@ -1,0 +1,98 @@
+🎯 Actors
+
+    Job-Seeker (User) – external users applying for jobs
+
+    Admin – university staff managing applications and vacancies
+
+    Super Admin – system owner with full privileges
+
+    System (Automated) – internal system processes (timer-based/status updates)
+
+🧩 Use Cases (Grouped by Actor)
+👤 Job-Seeker
+
+    Register an account
+
+    Log in
+
+    View job vacancies
+
+    Filter vacancies (by department, type, date, level)
+
+    View job details
+
+    Submit job application (via form)
+
+    Download printable application
+
+    View application status
+
+Relationships:
+
+    <<includes>>: "Log in" is required before most actions
+
+    <<extends>>: "Download application" extends "Submit application"
+
+👤 Admin
+
+    Secure login
+
+    Post job vacancies
+
+    Set job details and expiry date
+
+    View applicant data
+
+    Filter applicant data (by NIC, department, date, academic type, job ID)
+
+    Update application statuses
+
+        New
+
+        In Reviewing
+
+        Call for Interview
+
+        Hired
+
+Relationships:
+
+    <<extends>>: Filtering extends View Applicants
+
+    <<includes>>: Update status includes viewing applicant data
+
+👤 Super Admin
+
+    Manage Admin accounts
+
+        Create
+
+        Update
+
+        Delete
+
+    Manage Job-Seeker accounts
+
+        Suspend
+
+        Activate
+
+        Delete
+
+Relationships:
+
+    <<includes>>: Log in required
+
+    <<extends>>: Update/Delete Admins extends Manage Admin
+
+🤖 System (Internal Automation)
+
+    Automatically close expired job vacancies
+
+    Change job status based on expiry
+
+    Validate form input
+
+    Enforce role-based access
+
+    Print/format application forms

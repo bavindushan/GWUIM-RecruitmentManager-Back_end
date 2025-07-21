@@ -1,0 +1,210 @@
+CREATE DATABASE recruitment_manager;
+USE recruitment_manager;
+
+CREATE TABLE User (
+    UserID INT AUTO_INCREMENT PRIMARY KEY,
+    FullName VARCHAR(100),
+    Email VARCHAR(100) UNIQUE,
+    PasswordHash VARCHAR(255),
+    NIC VARCHAR(20) UNIQUE,
+    PhoneNumber VARCHAR(20),
+    Address TEXT,
+    AccountStatus ENUM('Active', 'Suspended', 'Deleted') DEFAULT 'Active',
+    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE Admin (
+    AdminID INT AUTO_INCREMENT PRIMARY KEY,
+    FullName VARCHAR(100),
+    Email VARCHAR(100) UNIQUE,
+    PasswordHash VARCHAR(255),
+    Department VARCHAR(100),
+    PhoneNumber VARCHAR(20),
+    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    isDeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE SuperAdmin (
+    SuperAdminID INT AUTO_INCREMENT PRIMARY KEY,
+    FullName VARCHAR(100),
+    Email VARCHAR(100) UNIQUE,
+    PasswordHash VARCHAR(255),
+    PhoneNumber VARCHAR(20),
+    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE ApplicationTemplate (
+    TemplateID INT AUTO_INCREMENT PRIMARY KEY,
+    Type ENUM('Academic', 'Non-Academic'),
+    FilePath VARCHAR(255),
+    UploadedBy INT,
+    UploadDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (UploadedBy) REFERENCES Admin(AdminID)
+);
+
+CREATE TABLE JobVacancy (
+    JobID INT AUTO_INCREMENT PRIMARY KEY,
+    Title VARCHAR(150),
+    Description TEXT,
+    Type ENUM('Academic', 'Non-Academic'),
+    Department VARCHAR(100),
+    Level VARCHAR(50),
+    PostedBy INT,
+    PostedDate DATE,
+    ExpiryDate DATE,
+    Status ENUM('Open', 'Closed'),
+    TemplateID INT,
+    FOREIGN KEY (PostedBy) REFERENCES Admin(AdminID),
+    FOREIGN KEY (TemplateID) REFERENCES ApplicationTemplate(TemplateID)
+);
+
+CREATE TABLE Application (
+    ApplicationID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT,
+    JobID INT,
+    SubmissionDate DATE,
+    Status ENUM('New', 'In Reviewing', 'Called for Interview', 'Hired', 'Rejected') DEFAULT 'New',
+    Remarks TEXT,
+    FOREIGN KEY (UserID) REFERENCES User(UserID),
+    FOREIGN KEY (JobID) REFERENCES JobVacancy(JobID)
+);
+
+CREATE TABLE ApplicationGeneralDetails (
+    ApplicationID INT PRIMARY KEY,
+    PostApplied VARCHAR(150),
+    FullName VARCHAR(100),
+    NameWithInitials VARCHAR(100),
+    NIC VARCHAR(20),
+    DOB DATE,
+    Gender ENUM('Male', 'Female', 'Other'),
+    PhoneNumber VARCHAR(20),
+    Email VARCHAR(100),
+    PresentAddress TEXT,
+    PermanentAddress TEXT,
+    CivilStatus VARCHAR(50),
+    CitizenshipType ENUM('Descent', 'Registration'),
+    CitizenshipDetails TEXT,
+    EthnicityOrReligion VARCHAR(50),
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE GCE_OL_Results (
+    OL_ID INT AUTO_INCREMENT PRIMARY KEY,
+    ApplicationID INT,
+    Subject VARCHAR(100),
+    Grade VARCHAR(10),
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE GCE_AL_Results (
+    AL_ID INT AUTO_INCREMENT PRIMARY KEY,
+    ApplicationID INT,
+    Subject VARCHAR(100),
+    Grade VARCHAR(10),
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE UniversityEducations (
+    UE_ID INT AUTO_INCREMENT PRIMARY KEY,
+    ApplicationID INT,
+    DegreeOrDiploma VARCHAR(100),
+    Institute VARCHAR(150),
+    FromYear YEAR,
+    ToYear YEAR,
+    Class VARCHAR(50),
+    YearObtained YEAR,
+    IndexNumber VARCHAR(50),
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE ProfessionalQualifications (
+    PQ_ID INT AUTO_INCREMENT PRIMARY KEY,
+    ApplicationID INT,
+    Institution VARCHAR(150),
+    QualificationName VARCHAR(150),
+    FromYear YEAR,
+    ToYear YEAR,
+    ResultOrExamPassed VARCHAR(100),
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE EmploymentHistories (
+    EmploymentID INT AUTO_INCREMENT PRIMARY KEY,
+    ApplicationID INT,
+    PostHeld VARCHAR(100),
+    Institution VARCHAR(150),
+    FromDate DATE,
+    ToDate DATE,
+    LastSalary DECIMAL(10,2),
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE ExperienceDetails (
+    ExperienceID INT AUTO_INCREMENT PRIMARY KEY,
+    ApplicationID INT,
+    Description TEXT,
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE ResearchAndPublications (
+    ResearchID INT AUTO_INCREMENT PRIMARY KEY,
+    ApplicationID INT,
+    Description TEXT,
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE SpecialQualifications (
+    SpecialQualID INT AUTO_INCREMENT PRIMARY KEY,
+    ApplicationID INT,
+    Description TEXT,
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE LanguageProficiencies (
+    LangProfID INT AUTO_INCREMENT PRIMARY KEY,
+    ApplicationID INT,
+    Language VARCHAR(50),
+    CanSpeak ENUM('Very Good', 'Good', 'Fair', 'None'),
+    CanRead ENUM('Very Good', 'Good', 'Fair', 'None'),
+    CanWrite ENUM('Very Good', 'Good', 'Fair', 'None'),
+    CanTeach ENUM('Very Good', 'Good', 'Fair', 'None'),
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE ApplicationReferences (
+    ReferenceID INT AUTO_INCREMENT PRIMARY KEY,
+    ApplicationID INT,
+    Name VARCHAR(100),
+    Designation VARCHAR(100),
+    Address TEXT,
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE AdditionalInfo (
+    InfoID INT AUTO_INCREMENT PRIMARY KEY,
+    ApplicationID INT,
+    Content TEXT,
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE ApplicationAttachments (
+    AttachmentID INT AUTO_INCREMENT PRIMARY KEY,
+    ApplicationID INT,
+    FileType VARCHAR(50),
+    FilePath VARCHAR(255),
+    UploadedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ApplicationID) REFERENCES Application(ApplicationID)
+);
+
+CREATE TABLE AuditLog (
+    LogID INT AUTO_INCREMENT PRIMARY KEY,
+    ActorID INT,
+    ActorRole ENUM('Admin', 'SuperAdmin'),
+    Action VARCHAR(150),
+    Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Details TEXT
+);
+
+
