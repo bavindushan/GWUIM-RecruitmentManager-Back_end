@@ -8,3 +8,7 @@ exports.getAllUsers = async () => {
 exports.createUser = async (data) => {
   return await prisma.user.create({ data });
 };
+
+exports.findUserByEmail = async (email) => {
+  return await prisma.user.findUnique({ where: { email } });
+};

@@ -1,17 +1,18 @@
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const PORT = process.env.PORT || 5000
 
 const options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'Outsider Services API',
+            title: 'Recruitment Manager API',
             version: '1.0.0',
-            description: 'Hotel Management System - Customer Services',
+            description: 'API documentation for the Recruitment Manager system',
         },
         servers: [
             {
-                url: 'http://localhost:5000/api',
+                url: `http://localhost:${PORT}/api`,
             },
         ],
     },

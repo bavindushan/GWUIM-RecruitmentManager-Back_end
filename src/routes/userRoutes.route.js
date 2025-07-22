@@ -1,28 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController.controller');
-
-// ------------------------------------------
-
-
 const asyncHandler = require('express-async-handler');
-const userController = require('../controller/customer.controller');
-const authMiddleware = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
 /**
  * @swagger
  * tags:
  *   name: User
- *   description: User management, signin and signup
+ *   description: User management
  */
-
 
 /**
  * @swagger
- * /customer/sign-in:
+ * /user/sign-in:
  *   post:
- *     summary: Customer sign in
- *     tags: [Customer]
+ *     summary: Sign in
+ *     tags: [User]
  *     requestBody:
  *       required: true
  *       content:
@@ -36,10 +30,20 @@ const authMiddleware = require('../middlewares/authMiddleware');
  *                 type: string
  *     responses:
  *       200:
- *         description: Sign in successful
+ *         description: Successful login
  */
 router.post('/sign-in', asyncHandler(userController.signIn));
 
-router.get('/', userController.getAllUsers);
+/**
+ * @swagger
+ * /user:
+ *   get:
+ *     summary: Get all users
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: List of users
+ */
+router.get('/', asyncHandler(userController.getAllUsers));
 
 module.exports = router;
