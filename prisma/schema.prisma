@@ -1,15 +1,338 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
+
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model additionalinfo {
+  InfoID        Int          @id @default(autoincrement())
+  ApplicationID Int?
+  Content       String?      @db.Text
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "additionalinfo_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model admin {
+  AdminID             Int                   @id @default(autoincrement())
+  FullName            String?               @db.VarChar(100)
+  Email               String?               @unique(map: "Email") @db.VarChar(100)
+  PasswordHash        String?               @db.VarChar(255)
+  Department          String?               @db.VarChar(100)
+  PhoneNumber         String?               @db.VarChar(20)
+  CreatedAt           DateTime?             @default(now()) @db.DateTime(0)
+  UpdatedAt           DateTime?             @default(now()) @db.DateTime(0)
+  isDeleted           Boolean?              @default(false)
+  applicationtemplate applicationtemplate[]
+  jobvacancy          jobvacancy[]
+}
+
+model application {
+  ApplicationID              Int                          @id @default(autoincrement())
+  UserID                     Int?
+  JobID                      Int?
+  SubmissionDate             DateTime?                    @db.Date
+  Status                     application_Status?          @default(New)
+  Remarks                    String?                      @db.Text
+  additionalinfo             additionalinfo[]
+  user                       user?                        @relation(fields: [UserID], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "application_ibfk_1")
+  jobvacancy                 jobvacancy?                  @relation(fields: [JobID], references: [JobID], onDelete: NoAction, onUpdate: NoAction, map: "application_ibfk_2")
+  applicationattachments     applicationattachments[]
+  applicationgeneraldetails  applicationgeneraldetails?
+  applicationreferences      applicationreferences[]
+  employmenthistories        employmenthistories[]
+  experiencedetails          experiencedetails[]
+  gce_al_results             gce_al_results[]
+  gce_ol_results             gce_ol_results[]
+  languageproficiencies      languageproficiencies[]
+  professionalqualifications professionalqualifications[]
+  researchandpublications    researchandpublications[]
+  specialqualifications      specialqualifications[]
+  universityeducations       universityeducations[]
+
+  @@index([JobID], map: "JobID")
+  @@index([UserID], map: "UserID")
+}
+
+model applicationattachments {
+  AttachmentID  Int          @id @default(autoincrement())
+  ApplicationID Int?
+  FileType      String?      @db.VarChar(50)
+  FilePath      String?      @db.VarChar(255)
+  UploadedAt    DateTime?    @default(now()) @db.DateTime(0)
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "applicationattachments_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model applicationgeneraldetails {
+  ApplicationID       Int                                        @id
+  PostApplied         String?                                    @db.VarChar(150)
+  FullName            String?                                    @db.VarChar(100)
+  NameWithInitials    String?                                    @db.VarChar(100)
+  NIC                 String?                                    @db.VarChar(20)
+  DOB                 DateTime?                                  @db.Date
+  Gender              applicationgeneraldetails_Gender?
+  PhoneNumber         String?                                    @db.VarChar(20)
+  Email               String?                                    @db.VarChar(100)
+  PresentAddress      String?                                    @db.Text
+  PermanentAddress    String?                                    @db.Text
+  CivilStatus         String?                                    @db.VarChar(50)
+  CitizenshipType     applicationgeneraldetails_CitizenshipType?
+  CitizenshipDetails  String?                                    @db.Text
+  EthnicityOrReligion String?                                    @db.VarChar(50)
+  application         application                                @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "applicationgeneraldetails_ibfk_1")
+}
+
+model applicationreferences {
+  ReferenceID   Int          @id @default(autoincrement())
+  ApplicationID Int?
+  Name          String?      @db.VarChar(100)
+  Designation   String?      @db.VarChar(100)
+  Address       String?      @db.Text
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "applicationreferences_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model applicationtemplate {
+  TemplateID Int                       @id @default(autoincrement())
+  Type       applicationtemplate_Type?
+  FilePath   String?                   @db.VarChar(255)
+  UploadedBy Int?
+  UploadDate DateTime?                 @default(now()) @db.DateTime(0)
+  admin      admin?                    @relation(fields: [UploadedBy], references: [AdminID], onDelete: NoAction, onUpdate: NoAction, map: "applicationtemplate_ibfk_1")
+  jobvacancy jobvacancy[]
+
+  @@index([UploadedBy], map: "UploadedBy")
+}
+
+model auditlog {
+  LogID     Int                 @id @default(autoincrement())
+  ActorID   Int?
+  ActorRole auditlog_ActorRole?
+  Action    String?             @db.VarChar(150)
+  Timestamp DateTime?           @default(now()) @db.DateTime(0)
+  Details   String?             @db.Text
+}
+
+model employmenthistories {
+  EmploymentID  Int          @id @default(autoincrement())
+  ApplicationID Int?
+  PostHeld      String?      @db.VarChar(100)
+  Institution   String?      @db.VarChar(150)
+  FromDate      DateTime?    @db.Date
+  ToDate        DateTime?    @db.Date
+  LastSalary    Decimal?     @db.Decimal(10, 2)
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "employmenthistories_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model experiencedetails {
+  ExperienceID  Int          @id @default(autoincrement())
+  ApplicationID Int?
+  Description   String?      @db.Text
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "experiencedetails_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model gce_al_results {
+  AL_ID         Int          @id @default(autoincrement())
+  ApplicationID Int?
+  Subject       String?      @db.VarChar(100)
+  Grade         String?      @db.VarChar(10)
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "gce_al_results_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model gce_ol_results {
+  OL_ID         Int          @id @default(autoincrement())
+  ApplicationID Int?
+  Subject       String?      @db.VarChar(100)
+  Grade         String?      @db.VarChar(10)
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "gce_ol_results_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model jobvacancy {
+  JobID               Int                  @id @default(autoincrement())
+  Title               String?              @db.VarChar(150)
+  Description         String?              @db.Text
+  Type                jobvacancy_Type?
+  Department          String?              @db.VarChar(100)
+  Level               String?              @db.VarChar(50)
+  PostedBy            Int?
+  PostedDate          DateTime?            @db.Date
+  ExpiryDate          DateTime?            @db.Date
+  Status              jobvacancy_Status?
+  TemplateID          Int?
+  application         application[]
+  admin               admin?               @relation(fields: [PostedBy], references: [AdminID], onDelete: NoAction, onUpdate: NoAction, map: "jobvacancy_ibfk_1")
+  applicationtemplate applicationtemplate? @relation(fields: [TemplateID], references: [TemplateID], onDelete: NoAction, onUpdate: NoAction, map: "jobvacancy_ibfk_2")
+
+  @@index([PostedBy], map: "PostedBy")
+  @@index([TemplateID], map: "TemplateID")
+}
+
+model languageproficiencies {
+  LangProfID    Int                             @id @default(autoincrement())
+  ApplicationID Int?
+  Language      String?                         @db.VarChar(50)
+  CanSpeak      languageproficiencies_CanSpeak?
+  CanRead       languageproficiencies_CanRead?
+  CanWrite      languageproficiencies_CanWrite?
+  CanTeach      languageproficiencies_CanTeach?
+  application   application?                    @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "languageproficiencies_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model professionalqualifications {
+  PQ_ID              Int          @id @default(autoincrement())
+  ApplicationID      Int?
+  Institution        String?      @db.VarChar(150)
+  QualificationName  String?      @db.VarChar(150)
+  FromYear           Int?         @db.Year
+  ToYear             Int?         @db.Year
+  ResultOrExamPassed String?      @db.VarChar(100)
+  application        application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "professionalqualifications_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model researchandpublications {
+  ResearchID    Int          @id @default(autoincrement())
+  ApplicationID Int?
+  Description   String?      @db.Text
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "researchandpublications_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model specialqualifications {
+  SpecialQualID Int          @id @default(autoincrement())
+  ApplicationID Int?
+  Description   String?      @db.Text
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "specialqualifications_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model superadmin {
+  SuperAdminID Int       @id @default(autoincrement())
+  FullName     String?   @db.VarChar(100)
+  Email        String?   @unique(map: "Email") @db.VarChar(100)
+  PasswordHash String?   @db.VarChar(255)
+  PhoneNumber  String?   @db.VarChar(20)
+  CreatedAt    DateTime? @default(now()) @db.DateTime(0)
+}
+
+model universityeducations {
+  UE_ID           Int          @id @default(autoincrement())
+  ApplicationID   Int?
+  DegreeOrDiploma String?      @db.VarChar(100)
+  Institute       String?      @db.VarChar(150)
+  FromYear        Int?         @db.Year
+  ToYear          Int?         @db.Year
+  Class           String?      @db.VarChar(50)
+  YearObtained    Int?         @db.Year
+  IndexNumber     String?      @db.VarChar(50)
+  application     application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "universityeducations_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model user {
+  UserID        Int                 @id @default(autoincrement())
+  FullName      String?             @db.VarChar(100)
+  Email         String?             @unique(map: "Email") @db.VarChar(100)
+  PasswordHash  String?             @db.VarChar(255)
+  NIC           String?             @unique(map: "NIC") @db.VarChar(20)
+  PhoneNumber   String?             @db.VarChar(20)
+  Address       String?             @db.Text
+  AccountStatus user_AccountStatus? @default(Active)
+  CreatedAt     DateTime?           @default(now()) @db.DateTime(0)
+  UpdatedAt     DateTime?           @default(now()) @db.DateTime(0)
+  application   application[]
+}
+
+enum applicationtemplate_Type {
+  Academic
+  Non_Academic @map("Non-Academic")
+}
+
+enum auditlog_ActorRole {
+  Admin
+  SuperAdmin
+}
+
+enum jobvacancy_Type {
+  Academic
+  Non_Academic @map("Non-Academic")
+}
+
+enum languageproficiencies_CanSpeak {
+  Very_Good @map("Very Good")
+  Good
+  Fair
+  None
+}
+
+enum application_Status {
+  New
+  In_Reviewing         @map("In Reviewing")
+  Called_for_Interview @map("Called for Interview")
+  Hired
+  Rejected
+}
+
+enum languageproficiencies_CanRead {
+  Very_Good @map("Very Good")
+  Good
+  Fair
+  None
+}
+
+enum languageproficiencies_CanWrite {
+  Very_Good @map("Very Good")
+  Good
+  Fair
+  None
+}
+
+enum applicationgeneraldetails_Gender {
+  Male
+  Female
+  Other
+}
+
+enum languageproficiencies_CanTeach {
+  Very_Good @map("Very Good")
+  Good
+  Fair
+  None
+}
+
+enum user_AccountStatus {
+  Active
+  Suspended
+  Deleted
+}
+
+enum jobvacancy_Status {
+  Open
+  Closed
+}
+
+enum applicationgeneraldetails_CitizenshipType {
+  Descent
+  Registration
 }

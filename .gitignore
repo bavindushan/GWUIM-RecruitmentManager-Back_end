@@ -1,2 +1,5 @@
-
-/src/generated/prisma
+node_modules/
+.env
+dist/
+build/
+swagger-output.json
