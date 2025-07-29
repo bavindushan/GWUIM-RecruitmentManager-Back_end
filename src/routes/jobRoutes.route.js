@@ -54,4 +54,63 @@ const jobController = require('../controllers/jobController.controller');
  */
 router.get('/',authMiddleware, asyncHandler(jobController.getAllJobs));
 
+/**
+ * @swagger
+ * /api/jobs/filter:
+ *   get:
+ *     summary: Filter job vacancies by department, type, level, or closing date
+ *     tags: [Job]
+ *     parameters:
+ *       - in: query
+ *         name: department
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by department
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by job type
+ *       - in: query
+ *         name: level
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by job level
+ *       - in: query
+ *         name: closingDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: Filter by closing date (YYYY-MM-DD)
+ *     responses:
+ *       200:
+ *         description: Filtered job vacancies
+ */
+router.get('/filter', authMiddleware, asyncHandler(jobController.getFilteredJobs));
+
+/**
+ * @swagger
+ * /api/jobs/{id}:
+ *   get:
+ *     summary: Get a job vacancy by ID
+ *     tags: [Job]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The job ID
+ *     responses:
+ *       200:
+ *         description: Job found
+ *       404:
+ *         description: Job not found
+ */
+router.get('/:id', authMiddleware, asyncHandler(jobController.getJobById));
+
 module.exports = router;
