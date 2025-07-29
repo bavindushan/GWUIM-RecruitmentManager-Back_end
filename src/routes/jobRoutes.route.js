@@ -9,6 +9,8 @@ const jobController = require('../controllers/jobController.controller');
  * tags:
  *   name: Job
  *   description: Job vacancy management
+ * security:
+ *   - bearerAuth: []
  */
 
 /**
@@ -37,7 +39,7 @@ const jobController = require('../controllers/jobController.controller');
  *                     type: object
  *                     properties:
  *                       id:
- *                         type: string
+ *                         type: integer
  *                       title:
  *                         type: string
  *                       department:
@@ -48,11 +50,11 @@ const jobController = require('../controllers/jobController.controller');
  *                         type: string
  *                       closingDate:
  *                         type: string
- *                         format: date-time
+ *                         format: date
  *       500:
  *         description: Internal server error
  */
-router.get('/',authMiddleware, asyncHandler(jobController.getAllJobs));
+router.get('/', authMiddleware, asyncHandler(jobController.getAllJobs));
 
 /**
  * @swagger
@@ -89,6 +91,35 @@ router.get('/',authMiddleware, asyncHandler(jobController.getAllJobs));
  *     responses:
  *       200:
  *         description: Filtered job vacancies
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 results:
+ *                   type: integer
+ *                   example: 2
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       title:
+ *                         type: string
+ *                       department:
+ *                         type: string
+ *                       type:
+ *                         type: string
+ *                       level:
+ *                         type: string
+ *                       closingDate:
+ *                         type: string
+ *                         format: date
  */
 router.get('/filter', authMiddleware, asyncHandler(jobController.getFilteredJobs));
 
@@ -103,11 +134,35 @@ router.get('/filter', authMiddleware, asyncHandler(jobController.getFilteredJobs
  *         name: id
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: The job ID
  *     responses:
  *       200:
  *         description: Job found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     title:
+ *                       type: string
+ *                     department:
+ *                       type: string
+ *                     type:
+ *                       type: string
+ *                     level:
+ *                       type: string
+ *                     closingDate:
+ *                       type: string
+ *                       format: date
  *       404:
  *         description: Job not found
  */
