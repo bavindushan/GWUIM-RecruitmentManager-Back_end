@@ -23,9 +23,6 @@ setupSwaggerDocs(app);
 // Error handler 
 app.use(errorMiddleware);
 
-// Load scheduled jobs
-
-
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
