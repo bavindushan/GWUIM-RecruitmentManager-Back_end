@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const asyncHandler = require('express-async-handler');
 const userController = require('../controllers/userController.controller');
 
 /**
@@ -40,7 +41,7 @@ const userController = require('../controllers/userController.controller');
  *       400:
  *         description: Invalid input or user already exists
  */
-router.post('/register', userController.registerUser);
+router.post('/register', asyncHandler(userController.registerUser));
 
 /**
  * @swagger
@@ -65,6 +66,6 @@ router.post('/register', userController.registerUser);
  *       401:
  *         description: Invalid email or password
  */
-router.post('/sign-in', userController.loginUser);
+router.post('/sign-in', asyncHandler(userController.loginUser));
 
 module.exports = router;
