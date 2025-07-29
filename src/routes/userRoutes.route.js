@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController.controller');
-const asyncHandler = require('express-async-handler');
-const authMiddleware = require('../middleware/authMiddleware');
 
 /**
  * @swagger
@@ -13,7 +11,40 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 /**
  * @swagger
- * /user/sign-in:
+ * /api/users/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               nic:
+ *                 type: string
+ *               phoneNumber:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *       400:
+ *         description: Invalid input or user already exists
+ */
+router.post('/register', userController.registerUser);
+
+/**
+ * @swagger
+ * /api/users/signin:
  *   post:
  *     summary: Sign in
  *     tags: [User]
@@ -31,19 +62,9 @@ const authMiddleware = require('../middleware/authMiddleware');
  *     responses:
  *       200:
  *         description: Successful login
+ *       401:
+ *         description: Invalid email or password
  */
-router.post('/sign-in', asyncHandler(userController.signIn));
-
-/**
- * @swagger
- * /user:
- *   get:
- *     summary: Get all users
- *     tags: [User]
- *     responses:
- *       200:
- *         description: List of users
- */
-router.get('/', asyncHandler(userController.getAllUsers));
+router.post('/sign-in', userController.loginUser);
 
 module.exports = router;

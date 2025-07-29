@@ -1,21 +1,35 @@
 const userService = require('../services/userService.service');
-const generateToken = require('../utils/generateToken');
-const { UnauthorizedError } = require('../utils/AppError');
+const catchAsync = require('../utils/catchAsync');
+const { AppError, BadRequestError } = require('../utils/AppError');
 
-exports.getAllUsers = async (req, res) => {
-  const users = await userService.getAllUsers();
-  res.json(users);
-};
+// Register user
+exports.registerUser = catchAsync(async (req, res, next) => {
+  const userData = req.body;
 
-exports.signIn = async (req, res, next) => {
+  const user = await userService.registerUser(userData);
+
+  res.status(201).json({
+    status: 'success',
+    message: 'User registered successfully',
+    data: {
+      user,
+    },
+  });
+});
+
+// Sign in user
+exports.loginUser = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
-  const user = await userService.findUserByEmail(email);
 
-  if (!user || user.password !== password) {
-    // Note: you should hash passwords in real apps!
-    return next(new UnauthorizedError('Invalid email or password'));
+  if (!email || !password) {
+    return next(new BadRequestError('Email and password are required')); 
   }
 
-  const token = generateToken({ id: user.id, email: user.email });
-  res.json({ token, user });
-};
+  const token = await userService.signInUser(email, password);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Login successful',
+    token,
+  });
+});
