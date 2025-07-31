@@ -6,6 +6,44 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/research-and-publications:
+ *   post:
+ *     summary: Submit research and publications for an application
+ *     description: Allows a logged-in user to submit one or more research and publication records under a specific job application.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               jobId:
+ *                 type: integer
+ *                 example: 1
+ *               publications:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     Description:
+ *                       type: string
+ *                       example: "Published a research paper on AI in 2023."
+ *     responses:
+ *       201:
+ *         description: Research and publications submitted successfully
+ *       400:
+ *         description: Bad request - missing or invalid fields
+ *       401:
+ *         description: Unauthorized - user not logged in
+ */
+router.post('/research-and-publications', authMiddleware, asyncHandler(applicationController.submitResearchAndPublications));
+
+/**
+ * @swagger
  * /api/applications/professional-qualifications:
  *   post:
  *     summary: Submit professional qualifications for an application

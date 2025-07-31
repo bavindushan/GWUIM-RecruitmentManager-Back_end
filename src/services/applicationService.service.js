@@ -2,6 +2,38 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { BadRequestError, ValidationError, NotFoundError } = require('../utils/AppError');
 
+// Submit Research and Publications
+exports.submitResearchAndPublications = async (userId, jobId, publications) => {
+    if (!Array.isArray(publications) || publications.length === 0) {
+        throw new BadRequestError('Research and publications must be provided as a non-empty array.');
+    }
+
+    // Fetch existing application for user and job
+    const application = await prisma.application.findFirst({
+        where: {
+            UserID: userId,
+            JobID: jobId,
+        },
+    });
+
+    if (!application) {
+        throw new NotFoundError('No application found for the given user and job.');
+    }
+
+    // Prepare data for bulk insert
+    const recordsToInsert = publications.map(pub => ({
+        ApplicationID: application.ApplicationID,
+        Description: pub.Description,
+    }));
+
+    // Bulk insert
+    const createdRecords = await prisma.researchandpublications.createMany({
+        data: recordsToInsert,
+    });
+
+    return createdRecords;
+};
+
 // Submit Professional Qualifications
 exports.submitProfessionalQualifications = async (userId, jobId, qualifications) => {
     if (!Array.isArray(qualifications) || qualifications.length === 0) {

@@ -2,6 +2,24 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// Submit Research and Publications
+exports.submitResearchAndPublications = catchAsync(async (req, res, next) => {
+    const userId = req.user?.id;
+    const { jobId, publications } = req.body;
+
+    if (!jobId || !Array.isArray(publications) || publications.length === 0) {
+        throw new BadRequestError('Job ID and a non-empty publications array are required.');
+    }
+
+    const result = await applicationService.submitResearchAndPublications(userId, jobId, publications);
+
+    res.status(201).json({
+        status: 'success',
+        message: 'Research and publications submitted successfully.',
+        data: result,
+    });
+});
+
 // Submit Professional Qualifications
 exports.submitProfessionalQualifications = catchAsync(async (req, res, next) => {
     const userId = req.user?.id;
