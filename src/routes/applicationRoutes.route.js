@@ -6,6 +6,60 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/language-proficiencies:
+ *   post:
+ *     summary: Submit language proficiencies for an application
+ *     description: Allows a logged-in user to submit one or more language proficiency records under a specific job application.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               jobId:
+ *                 type: integer
+ *                 example: 1
+ *               languageProficiencies:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     Language:
+ *                       type: string
+ *                       example: "English"
+ *                     CanSpeak:
+ *                       type: string
+ *                       enum: [Yes, No]
+ *                       example: "Yes"
+ *                     CanRead:
+ *                       type: string
+ *                       enum: [Yes, No]
+ *                       example: "Yes"
+ *                     CanWrite:
+ *                       type: string
+ *                       enum: [Yes, No]
+ *                       example: "No"
+ *                     CanTeach:
+ *                       type: string
+ *                       enum: [Yes, No]
+ *                       example: "No"
+ *     responses:
+ *       201:
+ *         description: Language proficiencies submitted successfully
+ *       400:
+ *         description: Bad request - missing or invalid fields
+ *       401:
+ *         description: Unauthorized - user not logged in
+ */
+router.post('/language-proficiencies', authMiddleware, asyncHandler(applicationController.submitLanguageProficiencies));
+
+/**
+ * @swagger
  * /api/applications/experience-details:
  *   post:
  *     summary: Submit experience details for an application

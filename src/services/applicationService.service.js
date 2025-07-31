@@ -2,6 +2,42 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { BadRequestError, ValidationError, NotFoundError } = require('../utils/AppError');
 
+// Submit Language Proficiencies
+exports.submitLanguageProficiencies = async (userId, jobId, languageProficiencies) => {
+    if (!Array.isArray(languageProficiencies) || languageProficiencies.length === 0) {
+        throw new BadRequestError('Language proficiencies must be provided as a non-empty array.');
+    }
+
+    // Fetch existing application for user and job
+    const application = await prisma.application.findFirst({
+        where: {
+            UserID: userId,
+            JobID: jobId,
+        },
+    });
+
+    if (!application) {
+        throw new NotFoundError('No application found for the given user and job.');
+    }
+
+    // Map the input to DB records
+    const recordsToInsert = languageProficiencies.map(lp => ({
+        ApplicationID: application.ApplicationID,
+        Language: lp.Language,
+        CanSpeak: lp.CanSpeak,
+        CanRead: lp.CanRead,
+        CanWrite: lp.CanWrite,
+        CanTeach: lp.CanTeach,
+    }));
+
+    // Bulk insert language proficiencies
+    const createdRecords = await prisma.languageproficiencies.createMany({
+        data: recordsToInsert,
+    });
+
+    return createdRecords;
+};
+
 // Submit Experience Details
 exports.submitExperienceDetails = async (userId, jobId, experienceDetails) => {
     if (!Array.isArray(experienceDetails) || experienceDetails.length === 0) {

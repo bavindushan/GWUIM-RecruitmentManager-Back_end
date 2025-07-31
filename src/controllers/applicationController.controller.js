@@ -2,6 +2,24 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// Submit Language Proficiencies
+exports.submitLanguageProficiencies = catchAsync(async (req, res, next) => {
+    const userId = req.user?.id;
+    const { jobId, languageProficiencies } = req.body;
+
+    if (!jobId || !Array.isArray(languageProficiencies) || languageProficiencies.length === 0) {
+        throw new BadRequestError('Job ID and a non-empty languageProficiencies array are required.');
+    }
+
+    const result = await applicationService.submitLanguageProficiencies(userId, jobId, languageProficiencies);
+
+    res.status(201).json({
+        status: 'success',
+        message: 'Language proficiencies submitted successfully.',
+        data: result,
+    });
+});
+
 // Submit Experience Details
 exports.submitExperienceDetails = catchAsync(async (req, res, next) => {
     const userId = req.user?.id;
