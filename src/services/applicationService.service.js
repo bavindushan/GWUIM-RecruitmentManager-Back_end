@@ -2,6 +2,44 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { BadRequestError, ValidationError, NotFoundError } = require('../utils/AppError');
 
+// Service method to submit university education records
+exports.submitUniversityEducations = async (userId, jobId, universityEducations) => {
+    if (!Array.isArray(universityEducations) || universityEducations.length === 0) {
+        throw new BadRequestError('University education records must be provided as a non-empty array.');
+    }
+
+    // Fetch existing application for user and job
+    const application = await prisma.application.findFirst({
+        where: {
+            UserID: userId,
+            JobID: jobId,
+        },
+    });
+
+    if (!application) {
+        throw new NotFoundError('No application found for the given user and job.');
+    }
+
+    // Map input data to database records
+    const recordsToInsert = universityEducations.map(edu => ({
+        ApplicationID: application.ApplicationID,
+        DegreeOrDiploma: edu.DegreeOrDiploma,
+        Institute: edu.Institute,
+        FromYear: edu.FromYear,
+        ToYear: edu.ToYear,
+        Class: edu.Class,
+        YearObtained: edu.YearObtained,
+        IndexNumber: edu.IndexNumber,
+    }));
+
+    // Bulk insert university education records
+    const createdRecords = await prisma.universityeducations.createMany({
+        data: recordsToInsert,
+    });
+
+    return createdRecords;
+};
+
 // Submit Special Qualifications
 exports.submitSpecialQualifications = async (userId, jobId, specialQualifications) => {
     if (!Array.isArray(specialQualifications) || specialQualifications.length === 0) {

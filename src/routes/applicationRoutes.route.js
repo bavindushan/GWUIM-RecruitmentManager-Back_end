@@ -6,6 +6,62 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/university-educations:
+ *   post:
+ *     summary: Submit university education records for an application
+ *     description: Allows a logged-in user to submit one or more university education records under a specific job application.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               jobId:
+ *                 type: integer
+ *                 example: 1
+ *               universityEducations:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     DegreeOrDiploma:
+ *                       type: string
+ *                       example: "BSc in Software Engineering"
+ *                     Institute:
+ *                       type: string
+ *                       example: "London Metropolitan University"
+ *                     FromYear:
+ *                       type: integer
+ *                       example: 2021
+ *                     ToYear:
+ *                       type: integer
+ *                       example: 2024
+ *                     Class:
+ *                       type: string
+ *                       example: "First Class Honours"
+ *                     YearObtained:
+ *                       type: integer
+ *                       example: 2024
+ *                     IndexNumber:
+ *                       type: string
+ *                       example: "12345678"
+ *     responses:
+ *       201:
+ *         description: University education records submitted successfully
+ *       400:
+ *         description: Bad request - missing or invalid fields
+ *       401:
+ *         description: Unauthorized - user not logged in
+ */
+router.post( '/university-educations', authMiddleware, asyncHandler(applicationController.submitUniversityEducations));
+
+/**
+ * @swagger
  * /api/applications/special-qualifications:
  *   post:
  *     summary: Submit special qualifications for an application
