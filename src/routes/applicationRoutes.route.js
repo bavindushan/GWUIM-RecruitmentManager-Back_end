@@ -6,6 +6,67 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/employment-histories:
+ *   post:
+ *     summary: Submit employment histories for an application
+ *     description: Allows a logged-in user to submit one or more employment history records under a specific job application.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         description: Bearer token
+ *         schema:
+ *           type: string
+ *           example: Bearer <your_access_token>
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               jobId:
+ *                 type: integer
+ *                 example: 1
+ *               employmentHistories:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     PostHeld:
+ *                       type: string
+ *                       example: "Software Developer"
+ *                     Institution:
+ *                       type: string
+ *                       example: "Tech Solutions Ltd."
+ *                     FromDate:
+ *                       type: string
+ *                       format: date
+ *                       example: "2020-01-01"
+ *                     ToDate:
+ *                       type: string
+ *                       format: date
+ *                       example: "2022-06-30"
+ *                     LastSalary:
+ *                       type: number
+ *                       format: float
+ *                       example: 75000.50
+ *     responses:
+ *       201:
+ *         description: Employment histories submitted successfully
+ *       400:
+ *         description: Bad request - missing or invalid fields
+ *       401:
+ *         description: Unauthorized - user not logged in
+ */
+router.post('/employment-histories', authMiddleware, asyncHandler(applicationController.submitEmploymentHistories));
+
+/**
+ * @swagger
  * /applications/references:
  *   post:
  *     summary: Submit a reference for a job application

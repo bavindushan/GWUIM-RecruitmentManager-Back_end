@@ -2,7 +2,26 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
-exports.submitApplicationReferences = async (req, res, next) => {
+// Submit Employment Histories
+exports.submitEmploymentHistories = catchAsync(async (req, res, next) => {
+    const userId = req.user?.id;
+    const { jobId, employmentHistories } = req.body;
+
+    if (!jobId || !Array.isArray(employmentHistories) || employmentHistories.length === 0) {
+        throw new BadRequestError('Job ID and a non-empty employment histories array are required.');
+    }
+
+    const result = await applicationService.submitEmploymentHistories(userId, jobId, employmentHistories);
+
+    res.status(201).json({
+        status: 'success',
+        message: 'Employment histories submitted successfully.',
+        data: result,
+    });
+});
+
+// Submit Application References
+exports.submitApplicationReferences = catchAsync(async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { jobId, references } = req.body;
@@ -21,7 +40,7 @@ exports.submitApplicationReferences = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-};
+});
 
 // Save Application Attachment
 exports.saveApplicationAttachment = catchAsync(async (req, res, next) => {
