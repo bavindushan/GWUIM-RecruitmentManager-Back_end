@@ -6,6 +6,56 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/professional-qualifications:
+ *   post:
+ *     summary: Submit professional qualifications for an application
+ *     description: Allows a logged-in user to submit one or more professional qualifications under a specific job application.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               jobId:
+ *                 type: integer
+ *                 example: 1
+ *               qualifications:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     Institution:
+ *                       type: string
+ *                       example: "ABC Institute"
+ *                     QualificationName:
+ *                       type: string
+ *                       example: "Diploma in Computer Science"
+ *                     FromYear:
+ *                       type: integer
+ *                       example: 2019
+ *                     ToYear:
+ *                       type: integer
+ *                       example: 2021
+ *                     ResultOrExamPassed:
+ *                       type: string
+ *                       example: "Passed with Merit"
+ *     responses:
+ *       201:
+ *         description: Professional qualifications submitted successfully
+ *       400:
+ *         description: Bad request - missing or invalid fields
+ *       401:
+ *         description: Unauthorized - user not logged in
+ */
+router.post('/professional-qualifications', authMiddleware, asyncHandler(applicationController.submitProfessionalQualifications));
+
+/**
+ * @swagger
  * /api/applications/language-proficiencies:
  *   post:
  *     summary: Submit language proficiencies for an application
