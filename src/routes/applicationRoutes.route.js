@@ -6,6 +6,44 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/special-qualifications:
+ *   post:
+ *     summary: Submit special qualifications for an application
+ *     description: Allows a logged-in user to submit one or more special qualification records under a specific job application.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               jobId:
+ *                 type: integer
+ *                 example: 1
+ *               specialQualifications:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     Description:
+ *                       type: string
+ *                       example: "Certified Scrum Master"
+ *     responses:
+ *       201:
+ *         description: Special qualifications submitted successfully
+ *       400:
+ *         description: Bad request - missing or invalid fields
+ *       401:
+ *         description: Unauthorized - user not logged in
+ */
+router.post( '/special-qualifications', authMiddleware, asyncHandler(applicationController.submitSpecialQualifications));
+
+/**
+ * @swagger
  * /api/applications/research-and-publications:
  *   post:
  *     summary: Submit research and publications for an application
@@ -190,7 +228,7 @@ router.post('/language-proficiencies', authMiddleware, asyncHandler(applicationC
  *       401:
  *         description: Unauthorized - user not logged in
  */
-router.post( '/experience-details', authMiddleware, asyncHandler(applicationController.submitExperienceDetails));
+router.post('/experience-details', authMiddleware, asyncHandler(applicationController.submitExperienceDetails));
 
 /**
  * @swagger
@@ -528,6 +566,6 @@ router.post('/gce-ol-results', authMiddleware, asyncHandler(applicationControlle
  *       401:
  *         description: Unauthorized - user not logged in
  */
-router.post( '/attachments', authMiddleware, asyncHandler(applicationController.saveApplicationAttachment));
+router.post('/attachments', authMiddleware, asyncHandler(applicationController.saveApplicationAttachment));
 
 module.exports = router;
