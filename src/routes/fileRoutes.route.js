@@ -57,7 +57,7 @@ router.post('/upload', authMiddleware, upload.single('file'), fileController.upl
  * /files/delete/{filename}:
  *   delete:
  *     summary: Delete a previously uploaded file
- *     tags: [File Upload]
+ *     tags: [Files]
  *     security:
  *       - bearerAuth: []
  *     parameters:

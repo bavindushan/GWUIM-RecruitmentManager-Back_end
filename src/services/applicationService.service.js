@@ -2,6 +2,106 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { BadRequestError, ValidationError, NotFoundError } = require('../utils/AppError');
 
+// Submit Employment Histories
+exports.submitEmploymentHistories = async (userId, jobId, employmentHistories) => {
+    if (!Array.isArray(employmentHistories) || employmentHistories.length === 0) {
+        throw new BadRequestError('Employment histories must be provided as a non-empty array.');
+    }
+
+    // Find the application matching userId and jobId
+    const application = await prisma.application.findFirst({
+        where: {
+            UserID: userId,
+            JobID: jobId,
+        },
+    });
+
+    if (!application) {
+        throw new NotFoundError('No application found for the given user and job.');
+    }
+
+    // Prepare employment history records with ApplicationID
+    const recordsToInsert = employmentHistories.map(history => ({
+        ApplicationID: application.ApplicationID,
+        PostHeld: history.PostHeld,
+        Institution: history.Institution,
+        FromDate: history.FromDate ? new Date(history.FromDate) : null,
+        ToDate: history.ToDate ? new Date(history.ToDate) : null,
+        LastSalary: history.LastSalary,
+    }));
+
+    // Insert many employment histories
+    const createdRecords = await prisma.employmenthistories.createMany({
+        data: recordsToInsert,
+    });
+
+    return createdRecords;
+};
+
+// Submit Application References
+exports.submitApplicationReferences = async (userId, jobId, references) => {
+    if (!Array.isArray(references) || references.length === 0) {
+        throw new BadRequestError('At least one reference is required.');
+    }
+
+    // Find the corresponding ApplicationID
+    const existingApplication = await prisma.application.findFirst({
+        where: {
+            UserID: userId,
+            JobID: jobId
+        }
+    });
+
+    if (!existingApplication) {
+        throw new BadRequestError('No matching application found for this user and job.');
+    }
+
+    // Attach ApplicationID to each reference
+    const formattedReferences = references.map(ref => ({
+        ApplicationID: existingApplication.ApplicationID,
+        Name: ref.Name,
+        Designation: ref.Designation,
+        Address: ref.Address
+    }));
+
+    // Insert references in bulk
+    const createdReferences = await prisma.applicationreferences.createMany({
+        data: formattedReferences,
+        skipDuplicates: true
+    });
+
+    return createdReferences;
+};
+
+//Save Application Attachments
+exports.saveApplicationAttachment = async (applicationId, fileType, filePath) => {
+    // 1. Validate input
+    if (!applicationId || !fileType || !filePath) {
+        throw new BadRequestError('Application ID, File type, and File path are required to save attachment.');
+    }
+
+    // 2. verify the application exists
+    const application = await prisma.application.findUnique({
+        where: { ApplicationID: applicationId },
+    });
+
+    if (!application) {
+        throw new NotFoundError('Application not found for the given ApplicationID.');
+    }
+
+    // 3. Create attachment record
+    const attachment = await prisma.applicationattachments.create({
+        data: {
+            ApplicationID: applicationId,
+            FileType: fileType,
+            FilePath: filePath,
+            UploadedAt: new Date(),
+        },
+    });
+
+    return attachment;
+};
+
 // Save GCE O/L results for an application
 exports.submitGceOlResults = async (userId, jobId, olResults) => {
     if (!Array.isArray(olResults) || olResults.length === 0) {

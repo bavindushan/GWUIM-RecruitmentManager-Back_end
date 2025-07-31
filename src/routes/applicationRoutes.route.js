@@ -6,6 +6,61 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /applications/references:
+ *   post:
+ *     summary: Submit a reference for a job application
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               applicationId:
+ *                 type: integer
+ *               name:
+ *                 type: string
+ *               designation:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *             required:
+ *               - applicationId
+ *               - name
+ *               - designation
+ *               - address
+ *     responses:
+ *       201:
+ *         description: Reference submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Reference submitted successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     reference:
+ *                       $ref: '#/components/schemas/ApplicationReference'
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/references', authMiddleware, asyncHandler(applicationController.submitApplicationReferences));
+
+/**
+ * @swagger
  * /api/applications/general-details:
  *   post:
  *     summary: Submit general application details
@@ -185,5 +240,45 @@ router.post('/gce-al-results', authMiddleware, asyncHandler(applicationControlle
  *         description: Unauthorized - user not logged in
  */
 router.post('/gce-ol-results', authMiddleware, asyncHandler(applicationController.submitGceOlResults));
+
+/**
+ * @swagger
+ * /api/applications/attachments:
+ *   post:
+ *     summary: Save an application attachment record
+ *     description: Allows a logged-in user to save details of an uploaded attachment (file) for a specific application.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - applicationId
+ *               - fileType
+ *               - filePath
+ *             properties:
+ *               applicationId:
+ *                 type: integer
+ *                 example: 1
+ *               fileType:
+ *                 type: string
+ *                 example: "resume/pdf"
+ *               filePath:
+ *                 type: string
+ *                 example: "http://localhost:5000/uploads/resumes/1753935211621-593775319.pdf"
+ *     responses:
+ *       201:
+ *         description: Application attachment saved successfully
+ *       400:
+ *         description: Bad request - missing or invalid fields
+ *       401:
+ *         description: Unauthorized - user not logged in
+ */
+router.post( '/attachments', authMiddleware, asyncHandler(applicationController.saveApplicationAttachment));
 
 module.exports = router;
