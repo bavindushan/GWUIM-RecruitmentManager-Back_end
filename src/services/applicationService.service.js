@@ -2,6 +2,28 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { BadRequestError, ValidationError, NotFoundError } = require('../utils/AppError');
 
+// Get application status by user ID and job ID
+exports.getApplicationStatus = async (userId, jobId) => {
+    const application = await prisma.application.findFirst({
+        where: {
+            UserID: userId,
+            JobID: jobId,
+        },
+        select: {
+            ApplicationID: true,
+            Status: true,
+            Remarks: true,
+            SubmissionDate: true,
+        },
+    });
+
+    if (!application) {
+        throw new NotFoundError('Application not found for the specified job');
+    }
+
+    return application;
+};
+
 // Service method to submit university education records
 exports.submitUniversityEducations = async (userId, jobId, universityEducations) => {
     if (!Array.isArray(universityEducations) || universityEducations.length === 0) {

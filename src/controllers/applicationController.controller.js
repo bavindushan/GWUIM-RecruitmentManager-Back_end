@@ -2,6 +2,24 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// Get application status by jobId
+exports.getApplicationStatus = catchAsync(async (req, res, next) => {
+    const userId = req.user?.id;
+    const jobId = parseInt(req.params.jobId);
+
+    if (!jobId || isNaN(jobId)) {
+        throw new BadRequestError('A valid Job ID is required.');
+    }
+
+    const status = await applicationService.getApplicationStatus(userId, jobId);
+
+    res.status(200).json({
+        status: 'success',
+        message: 'Application status retrieved successfully.',
+        data: status,
+    });
+});
+
 // Submit University Educations
 exports.submitUniversityEducations = catchAsync(async (req, res, next) => {
     const userId = req.user?.id;

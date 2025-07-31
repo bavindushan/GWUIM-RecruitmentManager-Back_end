@@ -4,6 +4,52 @@ const authMiddleware = require('../middleware/authMiddleware');
 const asyncHandler = require('express-async-handler');
 const applicationController = require('../controllers/applicationController.controller');
 
+
+/**
+ * @swagger
+ * /api/applications/status/{jobId}:
+ *   get:
+ *     summary: Get application status for a specific job
+ *     description: Retrieves the status of an application for the given job ID submitted by the authenticated user.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: jobId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the job for which application status is requested
+ *     responses:
+ *       200:
+ *         description: Application status retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     ApplicationID:
+ *                       type: integer
+ *                     Status:
+ *                       type: string
+ *       400:
+ *         description: Invalid Job ID
+ *       404:
+ *         description: Application not found
+ *       401:
+ *         description: Unauthorized - Missing or invalid token
+ */
+router.get('/status/:jobId', authMiddleware, asyncHandler(applicationController.getApplicationStatus));
+
 /**
  * @swagger
  * /api/applications/university-educations:
