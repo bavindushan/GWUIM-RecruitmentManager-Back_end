@@ -2,6 +2,39 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { BadRequestError, ValidationError, NotFoundError } = require('../utils/AppError');
 
+// Save GCE O/L results for an application
+exports.submitGceOlResults = async (userId, jobId, olResults) => {
+    if (!Array.isArray(olResults) || olResults.length === 0) {
+        throw new BadRequestError('O/L results must be provided as a non-empty array.');
+    }
+
+    // 1. Fetch the existing application
+    const application = await prisma.application.findFirst({
+        where: {
+            UserID: userId,
+            JobID: jobId,
+        },
+    });
+
+    if (!application) {
+        throw new NotFoundError('No application found for the given user and job.');
+    }
+
+    // 2. Prepare O/L result records
+    const recordsToInsert = olResults.map(result => ({
+        ApplicationID: application.ApplicationID,
+        Subject: result.Subject,
+        Grade: result.Grade,
+    }));
+
+    // 3. Save O/L results
+    const createdResults = await prisma.gce_ol_results.createMany({
+        data: recordsToInsert,
+    });
+
+    return createdResults;
+};
+
 // Save GCE A/L results for an application
 exports.submitGceAlResults = async (userId, jobId, alResults) => {
     if (!Array.isArray(alResults) || alResults.length === 0) {

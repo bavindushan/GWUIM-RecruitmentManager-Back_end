@@ -137,4 +137,53 @@ router.post('/general-details', authMiddleware, asyncHandler(applicationControll
  */
 router.post('/gce-al-results', authMiddleware, asyncHandler(applicationController.submitGceAlResults));
 
+/**
+ * @swagger
+ * /api/applications/gce-ol-results:
+ *   post:
+ *     summary: Submit GCE O/L results for an application
+ *     description: Allows a logged-in user to submit one or more O/L subject results under a specific job application.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         description: Bearer token
+ *         schema:
+ *           type: string
+ *           example: Bearer <your_access_token>
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               jobId:
+ *                 type: integer
+ *                 example: 1
+ *               olResults:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     Subject:
+ *                       type: string
+ *                       example: "Mathematics"
+ *                     Grade:
+ *                       type: string
+ *                       example: "A"
+ *     responses:
+ *       201:
+ *         description: GCE O/L results submitted successfully
+ *       400:
+ *         description: Bad request - missing or invalid fields
+ *       401:
+ *         description: Unauthorized - user not logged in
+ */
+router.post('/gce-ol-results', authMiddleware, asyncHandler(applicationController.submitGceOlResults));
+
 module.exports = router;
