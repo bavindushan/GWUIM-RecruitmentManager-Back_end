@@ -6,6 +6,52 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/experience-details:
+ *   post:
+ *     summary: Submit experience details for an application
+ *     description: Allows a logged-in user to submit one or more experience details under a specific job application.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         description: Bearer token
+ *         schema:
+ *           type: string
+ *           example: Bearer <your_access_token>
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               jobId:
+ *                 type: integer
+ *                 example: 1
+ *               experienceDetails:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     Description:
+ *                       type: string
+ *                       example: "Managed team of 10 developers in a software project."
+ *     responses:
+ *       201:
+ *         description: Experience details submitted successfully
+ *       400:
+ *         description: Bad request - missing or invalid fields
+ *       401:
+ *         description: Unauthorized - user not logged in
+ */
+router.post( '/experience-details', authMiddleware, asyncHandler(applicationController.submitExperienceDetails));
+
+/**
+ * @swagger
  * /api/applications/employment-histories:
  *   post:
  *     summary: Submit employment histories for an application

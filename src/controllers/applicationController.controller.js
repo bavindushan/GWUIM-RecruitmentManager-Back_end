@@ -2,6 +2,24 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// Submit Experience Details
+exports.submitExperienceDetails = catchAsync(async (req, res, next) => {
+    const userId = req.user?.id;
+    const { jobId, experienceDetails } = req.body;
+
+    if (!jobId || !Array.isArray(experienceDetails) || experienceDetails.length === 0) {
+        throw new BadRequestError('Job ID and a non-empty experience details array are required.');
+    }
+
+    const result = await applicationService.submitExperienceDetails(userId, jobId, experienceDetails);
+
+    res.status(201).json({
+        status: 'success',
+        message: 'Experience details submitted successfully.',
+        data: result,
+    });
+});
+
 // Submit Employment Histories
 exports.submitEmploymentHistories = catchAsync(async (req, res, next) => {
     const userId = req.user?.id;

@@ -2,6 +2,38 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { BadRequestError, ValidationError, NotFoundError } = require('../utils/AppError');
 
+// Submit Experience Details
+exports.submitExperienceDetails = async (userId, jobId, experienceDetails) => {
+    if (!Array.isArray(experienceDetails) || experienceDetails.length === 0) {
+        throw new BadRequestError('Experience details must be provided as a non-empty array.');
+    }
+
+    // 1. Find existing application by userId and jobId
+    const application = await prisma.application.findFirst({
+        where: {
+            UserID: userId,
+            JobID: jobId,
+        },
+    });
+
+    if (!application) {
+        throw new NotFoundError('No application found for the given user and job.');
+    }
+
+    // 2. Prepare experience details records
+    const recordsToInsert = experienceDetails.map(detail => ({
+        ApplicationID: application.ApplicationID,
+        Description: detail.Description,
+    }));
+
+    // 3. Save experience details
+    const createdExperienceDetails = await prisma.experiencedetails.createMany({
+        data: recordsToInsert,
+    });
+
+    return createdExperienceDetails;
+};
+
 // Submit Employment Histories
 exports.submitEmploymentHistories = async (userId, jobId, employmentHistories) => {
     if (!Array.isArray(employmentHistories) || employmentHistories.length === 0) {
