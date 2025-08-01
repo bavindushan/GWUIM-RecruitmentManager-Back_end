@@ -2,6 +2,76 @@ const catchAsync = require('../utils/catchAsync');
 const { BadRequestError } = require('../utils/AppError');
 const adminService = require('../services/AdminSrvice.service');
 
+// Update application status
+exports.updateApplicationStatus = catchAsync(async (req, res, next) => {
+    const { applicationID } = req.params;
+    const { status, remarks } = req.body;
+
+    const adminID = req.user?.id;
+
+    if (!status) {
+        return next(new ValidationError('Application status is required'));
+    }
+
+    const updatedApplication = await adminService.updateApplicationStatus({
+        adminID,
+        applicationID: parseInt(applicationID),
+        status,
+        remarks
+    });
+
+    res.status(200).json({
+        status: 'success',
+        message: 'Application status updated successfully',
+        application: updatedApplication
+    });
+});
+
+// Delete job vacancy by ID 
+exports.deleteJobVacancy = catchAsync(async (req, res, next) => {
+    const { jobID } = req.params;
+    const adminID = req.user?.id;
+
+    if (!jobID) {
+        return next(new ValidationError('Job ID is required'));
+    }
+
+    const deletedJob = await adminService.deleteJobVacancy({
+        adminID,
+        jobID: parseInt(jobID),
+    });
+
+    res.status(200).json({
+        status: 'success',
+        message: 'Job vacancy deleted successfully',
+        job: deletedJob,
+    });
+});
+
+// Update job vacancy expiry date
+exports.updateExpiryDate = catchAsync(async (req, res, next) => {
+    const { jobID } = req.params;
+    const { newExpiryDate } = req.body;
+
+    const adminID = req.user?.id;
+
+    if (!newExpiryDate) {
+        return next(new ValidationError('New expiry date is required'));
+    }
+
+    const updatedJob = await adminService.updateJobVacancyExpiryDate({
+        adminID,
+        jobID: parseInt(jobID),
+        newExpiryDate,
+    });
+
+    res.status(200).json({
+        status: 'success',
+        message: 'Expiry date updated successfully',
+        job: updatedJob,
+    });
+});
+
 // Post job vacancy
 exports.postJobVacancy = catchAsync(async (req, res, next) => {
     const {

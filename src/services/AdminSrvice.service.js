@@ -6,7 +6,103 @@ const { hashPassword, comparePasswords } = require('../utils/passwordUtils');
 const generateToken = require('../utils/generateToken');
 const { logAdminAction } = require('./LogMionitoringService.service');
 
+// Update application status
+exports.updateApplicationStatus = async ({ adminID, applicationID, status, remarks }) => {
+    const application = await prisma.application.findUnique({
+        where: { ApplicationID: applicationID }
+    });
 
+    if (!application) {
+        throw new NotFoundError('Application not found');
+    }
+
+    // Validate status enum
+    const allowedStatuses = ['New', 'In Reviewing', 'Call for Interview', 'Hired'];
+    if (!allowedStatuses.includes(status)) {
+        throw new ValidationError('Invalid application status');
+    }
+
+    const updatedApplication = await prisma.application.update({
+        where: { ApplicationID: applicationID },
+        data: {
+            Status: status,
+            Remarks: remarks || undefined
+        }
+    });
+
+    await logAdminAction(
+        adminID,
+        'Admin',
+        'Update Application Status',
+        `Admin ID: ${adminID} updated status of Application ID: ${applicationID} to "${status}"`
+    );
+
+    return updatedApplication;
+};
+
+// Delete job vacancy by ID
+exports.deleteJobVacancy = async ({ adminID, jobID }) => {
+    // Check if job exists
+    const job = await prisma.jobvacancy.findUnique({
+        where: { JobID: jobID },
+    });
+
+    if (!job) {
+        throw new NotFoundError('Job vacancy not found');
+    }
+
+    const deletedJob = await prisma.jobvacancy.delete({
+        where: { JobID: jobID },
+    });
+
+    // Log admin action
+    await logAdminAction(
+        adminID,
+        'Admin',
+        'Delete Job Vacancy',
+        `Admin ID: ${adminID} deleted Job Vacancy ID: ${jobID}`
+    );
+
+    return deletedJob;
+};
+
+// Update vacancy expiry date
+// Update vacancy expiry date
+exports.updateJobVacancyExpiryDate = async ({ adminID, jobID, newExpiryDate }) => {
+    // Check if job exists
+    const job = await prisma.jobvacancy.findUnique({ where: { JobID: jobID } });
+    if (!job) {
+        throw new NotFoundError('Job vacancy not found');
+    }
+
+    const today = new Date();
+    const newDate = new Date(newExpiryDate);
+
+    if (newDate <= today) {
+        throw new ValidationError('Expiry date must be a future date');
+    }
+
+    const updatedJob = await prisma.jobvacancy.update({
+        where: { JobID: jobID },
+        data: {
+            ExpiryDate: newDate,
+            Status: 'Open',
+        },
+    });
+
+    // Log action to audit
+    await logAdminAction(
+        adminID,
+        'Admin',
+        'Update Expiry Date',
+        `Admin ID: ${adminID} updated expiry date and reopened Job Vacancy ID: ${jobID}`
+    );
+
+    return updatedJob;
+};
+
+
+// Post job vacancy
 exports.postJobVacancy = async ({
     title,
     description,

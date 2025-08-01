@@ -198,4 +198,95 @@ router.post('/sign-up', asyncHandler(adminController.signUpAdmin));
  */
 router.post( '/job-vacancies', authMiddleware, asyncHandler(adminController.postJobVacancy));
 
+/**
+ * @swagger
+ * /api/admin/job-vacancy/{jobID}/expiry:
+ *   patch:
+ *     summary: Update expiry date of a job vacancy
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: jobID
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Job Vacancy ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               newExpiryDate:
+ *                 type: string
+ *                 format: date
+ *     responses:
+ *       200:
+ *         description: Expiry date updated successfully
+ *       404:
+ *         description: Job vacancy not found
+ */
+router.patch('/job-vacancy/:jobID/expiry', authMiddleware, asyncHandler(adminController.updateExpiryDate));
+
+/**
+ * @swagger
+ * /api/admin/job-vacancy/{jobID}:
+ *   delete:
+ *     summary: Delete a job vacancy
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: jobID
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the job vacancy to delete
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Job vacancy deleted successfully
+ *       404:
+ *         description: Job not found
+ */
+router.delete('/job-vacancy/:jobID', authMiddleware, asyncHandler(adminController.deleteJobVacancy));
+
+/**
+ * @swagger
+ * /api/admin/application-status/{applicationID}:
+ *   put:
+ *     summary: Update application status
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: applicationID
+ *         required: true
+ *         description: ID of the application to update
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [New, In Reviewing, Call for Interview, Hired]
+ *               remarks:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Application status updated successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Application not found
+ */
+router.put('/application-status/:applicationID', authMiddleware, asyncHandler (adminController.updateApplicationStatus));
+
 module.exports = router;
