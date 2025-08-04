@@ -144,6 +144,7 @@ model experiencedetails {
 model gce_al_results {
   AL_ID         Int          @id @default(autoincrement())
   ApplicationID Int?
+  ExamYear      Int?
   Subject       String?      @db.VarChar(100)
   Grade         String?      @db.VarChar(10)
   application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "gce_al_results_ibfk_1")
@@ -154,6 +155,7 @@ model gce_al_results {
 model gce_ol_results {
   OL_ID         Int          @id @default(autoincrement())
   ApplicationID Int?
+  ExamYear      Int?
   Subject       String?      @db.VarChar(100)
   Grade         String?      @db.VarChar(10)
   application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "gce_ol_results_ibfk_1")
