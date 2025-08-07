@@ -48,6 +48,7 @@ model application {
   gce_al_results             gce_al_results[]
   gce_ol_results             gce_ol_results[]
   languageproficiencies      languageproficiencies[]
+  physicalattributes_na      physicalattributes_na[]
   professionalqualifications professionalqualifications[]
   researchandpublications    researchandpublications[]
   specialqualifications      specialqualifications[]
@@ -263,6 +264,17 @@ model user {
   CreatedAt     DateTime?           @default(now()) @db.DateTime(0)
   UpdatedAt     DateTime?           @default(now()) @db.DateTime(0)
   application   application[]
+}
+
+model physicalattributes_na {
+  ID            Int          @id @default(autoincrement())
+  ApplicationID Int?
+  HeightFeet    Int?
+  HeightInches  Int?
+  ChestInches   Int?
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "physicalattributes_na_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
 }
 
 enum applicationtemplate_Type {

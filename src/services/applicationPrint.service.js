@@ -78,3 +78,4 @@ exports.generateApplicationPDF = async (applicationID) => {
     // Step 3 will insert text into `templatePage`
     return { pdfDoc, page: templatePage, application };
 };
+
