@@ -1,0 +1,103 @@
+{
+    "logo": { "x": 50, "y": 750, "width": 80, "height": 80 },
+
+    "universityTitle": { "x": 150, "y": 780, "fontSize": 14 },
+    "formTitle": { "x": 250, "y": 760, "fontSize": 12 },
+
+    "fields": {
+        "Post": { "x": 150, "y": 730, "fontSize": 11 },
+        "FullName": { "x": 150, "y": 710, "fontSize": 11 },
+        "PermanentAddress": { "x": 150, "y": 690, "fontSize": 11 },
+        "PhoneNumber": { "x": 150, "y": 670, "fontSize": 11 },
+        "NIC": { "x": 150, "y": 650, "fontSize": 11 },
+        "Email": { "x": 150, "y": 630, "fontSize": 11 },
+        "DOB": { "x": 150, "y": 610, "fontSize": 11 },
+
+        "Age_Y": { "x": 150, "y": 590, "fontSize": 11 },
+        "Age_M": { "x": 200, "y": 590, "fontSize": 11 },
+        "Age_D": { "x": 250, "y": 590, "fontSize": 11 },
+
+        "CivilStatus": { "x": 150, "y": 570, "fontSize": 11 },
+        "Gender": { "x": 150, "y": 550, "fontSize": 11 },
+        "CitizenshipType": { "x": 150, "y": 530, "fontSize": 11 },
+        "CitizenshipDetails": { "x": 150, "y": 510, "fontSize": 11 },
+        "EthnicityOrReligion": { "x": 150, "y": 490, "fontSize": 11 },
+
+        "HeightFeet": { "x": 150, "y": 470, "fontSize": 11 },
+        "HeightInches": { "x": 200, "y": 470, "fontSize": 11 },
+        "ChestInches": { "x": 250, "y": 470, "fontSize": 11 }
+    },
+
+    "tables": {
+        "GCE_OL": {
+        "startX": 80,
+        "startY": 440,
+        "rowHeight": 18,
+        "fontSize": 10,
+        "columns": {
+            "Subject": 0,
+            "Grade": 150,
+            "ExamYear": 220
+        }
+        },
+        "GCE_AL": {
+        "startX": 80,
+        "startY": 260,
+        "rowHeight": 18,
+        "fontSize": 10,
+        "columns": {
+            "Subject": 0,
+            "Grade": 150,
+            "ExamYear": 220
+        }
+        },
+        "UniversityEducation": {
+        "startX": 80,
+        "startY": 180,
+        "rowHeight": 18,
+        "fontSize": 10,
+        "columns": {
+            "DegreeOrDiploma": 0,
+            "Institute": 150,
+            "FromYear": 280,
+            "ToYear": 340,
+            "Class": 400,
+            "YearObtained": 460,
+            "IndexNumber": 520
+        }
+        },
+        "ProfessionalQualifications": {
+        "startX": 80,
+        "startY": 100,
+        "rowHeight": 18,
+        "fontSize": 10,
+        "columns": {
+            "Institution": 0,
+            "QualificationName": 150,
+            "FromYear": 280,
+            "ToYear": 340,
+            "ResultOrExamPassed": 400
+        }
+        }
+    },
+
+    "experience": { "x": 80, "y": 70, "fontSize": 11 },
+    "specialQualifications": { "x": 80, "y": 50, "fontSize": 11 },
+
+    "declaration": {
+        "textX": 50,
+        "textY": 30,
+        "fontSize": 10,
+        "text": "I certify that all the particulars given by me in this application are true and accurate. I am aware 
+                that if any particulars are found to be false or inaccurate prior to my selection, I will be dismissed from 
+                service without compensation. "
+    },
+
+    "signature": {
+        "dateX": 350,
+        "dateY": 30,
+        "signatureX": 500,
+        "signatureY": 30,
+        "fontSize": 11
+    }
+}
