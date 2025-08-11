@@ -5,11 +5,11 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { NotFoundError } = require('../utils/AppError');
 
-// Load the template based on application type
+// Load the template PDF based on application type
 async function loadTemplate(applicationType) {
     const fileName = applicationType === 'Academic'
         ? 'academic_template.pdf'
-        : 'non_academic_template.pdf';
+        : 'non-academic_template.pdf';
 
     const templatePath = path.join(__dirname, '..', '..', 'templates', fileName);
 
@@ -21,7 +21,7 @@ async function loadTemplate(applicationType) {
     return await PDFDocument.load(templateBytes);
 }
 
-// Utility to load coordinate mapping JSON
+// Load mapping JSON for field coordinates
 function loadMapping(fileName) {
     const mappingPath = path.join(__dirname, '..', '..', 'templates', fileName);
     if (!fs.existsSync(mappingPath)) {
@@ -30,17 +30,13 @@ function loadMapping(fileName) {
     return JSON.parse(fs.readFileSync(mappingPath, 'utf8'));
 }
 
-// Fetch application and related data from DB
+// Fetch application and all related data from DB
 async function fetchApplicationData(applicationID) {
     const application = await prisma.application.findUnique({
         where: { ApplicationID: applicationID },
         include: {
             user: true,
-            jobvacancy: {
-                include: {
-                    applicationtemplate: true
-                }
-            },
+            jobvacancy: { include: { applicationtemplate: true } },
             applicationgeneraldetails: true,
             applicationreferences: true,
             employmenthistories: true,
@@ -53,7 +49,7 @@ async function fetchApplicationData(applicationID) {
             specialqualifications: true,
             universityeducations: true,
             additionalinfo: true,
-            physicalattributes_na: true
+            physicalattributes_na: true,
         }
     });
 
@@ -64,29 +60,50 @@ async function fetchApplicationData(applicationID) {
     return application;
 }
 
-// Main generator function
-exports.generateApplicationPDF = async (applicationID) => {
-    // Step A – Fetch DB data
-    const application = await fetchApplicationData(applicationID);
+// Helper to format dates as dd/mm/yyyy or empty string
+function formatDate(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
 
-    // Step B – Determine template type and load PDF
-    const applicationType = application.jobvacancy?.applicationtemplate?.Type || 'Non_Academic';
-    const templateDoc = await loadTemplate(applicationType);
+// Helper to draw tabular data on PDF page
+function drawTable(page, dataArray, mappingSection, font) {
+    if (!dataArray || !mappingSection) return;
+    let yPos = mappingSection.startY;
+    const startX = mappingSection.startX;
+    const rowHeight = mappingSection.rowHeight || 15;
+    const fontSize = mappingSection.fontSize || 10;
 
-    // Step C – Load coordinates mapping
-    const mapping = loadMapping('non_academic_mapping.json'); // for Non Academic
+    for (const item of dataArray) {
+        for (const [colName, offsetX] of Object.entries(mappingSection.columns)) {
+            let text = item[colName] !== undefined && item[colName] !== null ? String(item[colName]) : '';
 
-    // Step D – Load fonts and assets (logo)
+            // Format dates in table if columns hint date
+            if (colName.toLowerCase().includes('date') || colName.toLowerCase().includes('year')) {
+                text = formatDate(text) || text;
+            }
+
+            page.drawText(text, {
+                x: startX + offsetX,
+                y: yPos,
+                size: fontSize,
+                font,
+                color: rgb(0, 0, 0)
+            });
+        }
+        yPos -= rowHeight;
+    }
+}
+
+// Common function to draw headers, logo, declaration, and signature placeholders
+async function drawCommonSections(templateDoc, page, mapping) {
     const font = await templateDoc.embedFont(StandardFonts.Helvetica);
+
+    // Draw logo if exists
     const logoPath = path.join(__dirname, '..', 'utils', 'assets', 'university_logo.png');
-    const logoImage = fs.existsSync(logoPath)
-        ? await templateDoc.embedPng(fs.readFileSync(logoPath))
-        : null;
-
-    const page = templateDoc.getPages()[0];
-
-    // Step E – Draw static header (logo + title)
-    if (logoImage) {
+    if (fs.existsSync(logoPath)) {
+        const logoImage = await templateDoc.embedPng(fs.readFileSync(logoPath));
         page.drawImage(logoImage, {
             x: mapping.logo.x,
             y: mapping.logo.y,
@@ -94,6 +111,8 @@ exports.generateApplicationPDF = async (applicationID) => {
             height: mapping.logo.height
         });
     }
+
+    // Draw titles
     page.drawText('Gampaha Wickramarachchi University of Indigenous Medicine, Sri Lanka', {
         x: mapping.universityTitle.x,
         y: mapping.universityTitle.y,
@@ -101,18 +120,76 @@ exports.generateApplicationPDF = async (applicationID) => {
         font,
         color: rgb(0, 0, 0)
     });
-    page.drawText('Form of Application', {
+
+    page.drawText(mapping.formTitle.text, {
         x: mapping.formTitle.x,
         y: mapping.formTitle.y,
         size: mapping.formTitle.fontSize,
-        font
+        font,
+        color: rgb(0, 0, 0)
     });
 
-    // Step F – Draw applicant general details dynamically
+    // Draw declaration text if exists
+    if (mapping.declaration?.text) {
+        page.drawText(mapping.declaration.text, {
+            x: mapping.declaration.textX,
+            y: mapping.declaration.textY,
+            size: mapping.declaration.fontSize || 10,
+            font,
+            color: rgb(0, 0, 0),
+            maxWidth: 500,
+            lineHeight: 12,
+        });
+    }
+
+    // Draw signature and date placeholders
+    page.drawText('Date:', {
+        x: mapping.signature.dateX,
+        y: mapping.signature.dateY,
+        size: mapping.signature.fontSize || 10,
+        font,
+        color: rgb(0, 0, 0)
+    });
+
+    page.drawText('Signature:', {
+        x: mapping.signature.signatureX,
+        y: mapping.signature.signatureY,
+        size: mapping.signature.fontSize || 10,
+        font,
+        color: rgb(0, 0, 0)
+    });
+
+    return font;
+}
+
+// Main function to generate PDF (generic, chooses Academic or Non-Academic)
+exports.generateApplicationPDF = async (applicationID) => {
+    const application = await fetchApplicationData(applicationID);
+
+    // Determine type & load corresponding template and mapping
+    const applicationType = application.jobvacancy?.applicationtemplate?.Type || 'Non_Academic';
+    const templateFileName = applicationType === 'Academic' ? 'academic_template.pdf' : 'non-academic_template.pdf';
+    const mappingFileName = applicationType === 'Academic' ? 'academic_mapping.json' : 'non-academic_mapping.json';
+
+    const templateDoc = await loadTemplate(applicationType);
+    const mapping = loadMapping(mappingFileName);
+
+    const page = templateDoc.getPages()[0];
+
+    // Draw headers, logo, declaration, and signature placeholders
+    const font = await drawCommonSections(templateDoc, page, mapping);
+
+    // Draw application general details
     if (mapping.fields && application.applicationgeneraldetails) {
         for (const [field, coords] of Object.entries(mapping.fields)) {
-            const text = application.applicationgeneraldetails[field] || '';
-            page.drawText(text, {
+            let text = application.applicationgeneraldetails[field] || '';
+
+            // Format date fields explicitly
+            if (field.toLowerCase().includes('date') || field.toLowerCase() === 'dob') {
+                text = formatDate(text);
+            }
+
+            page.drawText(text.toString(), {
                 x: coords.x,
                 y: coords.y,
                 size: coords.fontSize || 10,
@@ -122,43 +199,35 @@ exports.generateApplicationPDF = async (applicationID) => {
         }
     }
 
-    // Helper to draw tabular data lists with proper column positioning
-    function drawTable(dataArray, mappingSection) {
-        if (!dataArray || !mappingSection) return;
-        let yPos = mappingSection.startY;
-        const startX = mappingSection.startX;
-        const rowHeight = mappingSection.rowHeight || 15;
-        const fontSize = mappingSection.fontSize || 10;
-
-        for (const item of dataArray) {
-            for (const [colName, offsetX] of Object.entries(mappingSection.columns)) {
-                const text = item[colName] !== undefined && item[colName] !== null ? String(item[colName]) : '';
-                page.drawText(text, {
-                    x: startX + offsetX,
-                    y: yPos,
-                    size: fontSize,
-                    font,
-                    color: rgb(0, 0, 0)
-                });
-            }
-            yPos -= rowHeight;
+    // Draw tables with related data
+    if (mapping.tables) {
+        if (mapping.tables.SecondaryEducation) {
+            drawTable(page, application.gce_ol_results, mapping.tables.SecondaryEducation, font);
+        }
+        if (mapping.tables.HigherEducation) {
+            drawTable(page, application.gce_al_results, mapping.tables.HigherEducation, font);
+        }
+        if (mapping.tables.UniversityEducation) {
+            drawTable(page, application.universityeducations, mapping.tables.UniversityEducation, font);
+        }
+        if (mapping.tables.ProfessionalQualifications) {
+            drawTable(page, application.professionalqualifications, mapping.tables.ProfessionalQualifications, font);
+        }
+        if (mapping.tables.LanguageProficiency) {
+            drawTable(page, application.languageproficiencies, mapping.tables.LanguageProficiency, font);
+        }
+        if (mapping.tables.EmployeeRecords) {
+            drawTable(page, application.employmenthistories, mapping.tables.EmployeeRecords, font);
         }
     }
 
-    // Step G – Draw tables with data
-    drawTable(application.gce_ol_results, mapping.tables.GCE_OL);
-    drawTable(application.gce_al_results, mapping.tables.GCE_AL);
-    drawTable(application.universityeducations, mapping.tables.UniversityEducation);
-    drawTable(application.professionalqualifications, mapping.tables.ProfessionalQualifications);
-
-    // Optional: Draw experience and special qualifications as plain text
+    // Optionally draw special qualifications & experience (if mapping present)
     if (application.experiencedetails && mapping.experience) {
         let y = mapping.experience.y;
         const x = mapping.experience.x;
         const fontSize = mapping.experience.fontSize || 11;
-
         for (const exp of application.experiencedetails) {
-            const text = `${exp.Position || ''} at ${exp.CompanyName || ''} (${exp.FromYear || ''} - ${exp.ToYear || ''})`;
+            const text = exp.Description || '';
             page.drawText(text, { x, y, size: fontSize, font, color: rgb(0, 0, 0) });
             y -= 15;
         }
@@ -168,7 +237,6 @@ exports.generateApplicationPDF = async (applicationID) => {
         let y = mapping.specialQualifications.y;
         const x = mapping.specialQualifications.x;
         const fontSize = mapping.specialQualifications.fontSize || 11;
-
         for (const sq of application.specialqualifications) {
             const text = sq.Description || '';
             page.drawText(text, { x, y, size: fontSize, font, color: rgb(0, 0, 0) });
@@ -176,35 +244,6 @@ exports.generateApplicationPDF = async (applicationID) => {
         }
     }
 
-    // Step H – Draw declaration, date, signature placeholders
-    if (mapping.declaration) {
-        page.drawText(mapping.declaration.text, {
-            x: mapping.declaration.textX,
-            y: mapping.declaration.textY,
-            size: mapping.declaration.fontSize || 10,
-            font,
-            color: rgb(0, 0, 0)
-        });
-    }
-
-    if (mapping.signature) {
-        page.drawText('Date: ' + new Date().toLocaleDateString(), {
-            x: mapping.signature.dateX,
-            y: mapping.signature.dateY,
-            size: mapping.signature.fontSize || 10,
-            font,
-            color: rgb(0, 0, 0)
-        });
-        page.drawText('Signature:', {
-            x: mapping.signature.signatureX,
-            y: mapping.signature.signatureY,
-            size: mapping.signature.fontSize || 10,
-            font,
-            color: rgb(0, 0, 0)
-        });
-    }
-
-    // Step I – Save and return PDF bytes
-    const pdfBytes = await templateDoc.save();
-    return pdfBytes;
+    // Save and return PDF bytes
+    return await templateDoc.save();
 };

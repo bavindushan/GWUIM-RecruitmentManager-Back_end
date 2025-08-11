@@ -1,0 +1,136 @@
+{
+    "logo": { "x": 50, "y": 750, "width": 80, "height": 80 },
+
+    "applicationNo": { "x": 450, "y": 780, "fontSize": 10 },
+    "postCode": { "x": 450, "y": 765, "fontSize": 10 },
+    "closingDate": { "x": 450, "y": 750, "fontSize": 10 },
+
+    "universityTitle": { "x": 150, "y": 780, "fontSize": 14 },
+    "formTitle": { "x": 250, "y": 760, "fontSize": 12 },
+
+    "fields": {
+        "Post": { "x": 150, "y": 730 },
+        "Subject": { "x": 150, "y": 710 },
+        "Department": { "x": 150, "y": 690 },
+        "Faculty": { "x": 150, "y": 670 },
+        "FullName": { "x": 150, "y": 650 },
+        "NameWithInitials": { "x": 150, "y": 630 },
+        "CivilStatus": { "x": 150, "y": 610 },
+        "Gender": { "x": 150, "y": 590 },
+        "NIC": { "x": 150, "y": 570 },
+        "PresentAddress": { "x": 150, "y": 550 },
+        "PermanentAddress": { "x": 150, "y": 530 },
+        "PhoneNumber": { "x": 150, "y": 510 },
+        "DOB": { "x": 150, "y": 490 },
+        "AgeAtClosingDate": { "x": 150, "y": 470 },
+        "CitizenshipType": { "x": 150, "y": 450 },
+        "CitizenshipDetails": { "x": 150, "y": 430 }
+    },
+
+    "tables": {
+        "SecondaryEducation": {
+        "startX": 50,
+        "startY": 400,
+        "rowHeight": 18,
+        "columns": {
+            "Subject": 0,
+            "Grade": 150,
+            "ExamYear": 220
+        }
+        },
+        "HigherEducation": {
+        "startX": 50,
+        "startY": 320,
+        "rowHeight": 18,
+        "columns": {
+            "DegreeOrDiploma": 0,
+            "Institute": 150,
+            "FromYear": 280,
+            "ToYear": 340,
+            "Class": 400,
+            "YearObtained": 460,
+            "IndexNumber": 520
+        }
+        },
+        "OtherQualifications": {
+        "startX": 50,
+        "startY": 240,
+        "rowHeight": 18,
+        "columns": {
+            "Institution": 0,
+            "QualificationName": 150,
+            "FromYear": 280,
+            "ToYear": 340,
+            "ResultOrExamPassed": 400
+        }
+        },
+        "ProfessionalQualifications": {
+        "startX": 50,
+        "startY": 160,
+        "rowHeight": 18,
+        "columns": {
+            "Institution": 0,
+            "QualificationName": 150,
+            "FromYear": 280,
+            "ToYear": 340,
+            "ResultOrExamPassed": 400
+        }
+        },
+        "LanguageProficiencyMain": {
+        "startX": 50,
+        "startY": 100,
+        "rowHeight": 18,
+        "columns": {
+            "Language": 0,
+            "CanSpeak": 100,
+            "CanRead": 180,
+            "CanWrite": 260,
+            "CanTeach": 340
+        }
+        },
+        "LanguageProficiencyOther": {
+        "startX": 50,
+        "startY": 40,
+        "rowHeight": 18,
+        "columns": {
+            "Language": 0,
+            "CanSpeak": 100,
+            "CanRead": 180,
+            "CanWrite": 260,
+            "CanTeach": 340
+        }
+        },
+        "EmploymentRecords": {
+        "startX": 300,
+        "startY": 400,
+        "rowHeight": 18,
+        "columns": {
+            "PostHeld": 0,
+            "Institution": 150,
+            "FromDate": 300,
+            "ToDate": 400,
+            "LastSalary": 500
+        }
+        }
+    },
+
+    "experienceDescription": { "x": 300, "y": 350, "fontSize": 10 },
+    "researchPublications": { "x": 300, "y": 330, "fontSize": 10 },
+    "specialQualifications": { "x": 300, "y": 310, "fontSize": 10 },
+    "nonRelatedReferees": { "x": 50, "y": 20, "fontSize": 10 },
+    "additionalInfo": { "x": 50, "y": 10, "fontSize": 10 },
+
+    "declaration": {
+        "textX": 50,
+        "textY": 5,
+        "fontSize": 10,
+        "text": "I hereby declare that the particulars furnished by me in the application are true and accurate. I am also aware that if any particulars contained herein are found to be false or incorrect, I am liable to disqualify to the post, if the inaccuracy is discovered before the selection and dismissal without any compensation or to take any legal action against me if the inaccuracy is discovered after the appointment."
+    },
+
+    "signature": {
+        "dateX": 350,
+        "dateY": 5,
+        "signatureX": 500,
+        "signatureY": 5
+    }
+}
