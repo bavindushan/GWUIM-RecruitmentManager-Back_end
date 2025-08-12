@@ -402,10 +402,7 @@ exports.submitGeneralDetails = async (userId, jobId, generalDetails) => {
 
     // 2. Check if there's already an application for this user and job
     let application = await prisma.application.findFirst({
-        where: {
-            UserID: userId,
-            JobID: jobId,
-        },
+        where: { UserID: userId, JobID: jobId },
     });
 
     // 3. If not, create a new application record
@@ -415,13 +412,9 @@ exports.submitGeneralDetails = async (userId, jobId, generalDetails) => {
                 SubmissionDate: new Date(),
                 Status: "New",
                 Remarks: "",
-                user: {
-                    connect: { UserID: userId }
-                },
-                jobvacancy: {
-                    connect: { JobID: jobId }
-                }
-            }
+                user: { connect: { UserID: userId } },
+                jobvacancy: { connect: { JobID: jobId } },
+            },
         });
     }
 
@@ -434,11 +427,24 @@ exports.submitGeneralDetails = async (userId, jobId, generalDetails) => {
         throw new ValidationError('General details already submitted for this application.');
     }
 
-    // 5. Save general details
+    // 5. Convert date fields in generalDetails to Date objects
+    const sanitizedDetails = { ...generalDetails };
+
+    if (sanitizedDetails.DOB) {
+        sanitizedDetails.DOB = new Date(sanitizedDetails.DOB);
+        if (isNaN(sanitizedDetails.DOB.getTime())) {
+            throw new BadRequestError('Invalid DOB date format.');
+        }
+    }
+
+    // If you have more date fields, convert similarly here:
+    // e.g., sanitizedDetails.SomeOtherDate = new Date(...);
+
+    // 6. Save general details
     const savedDetails = await prisma.applicationgeneraldetails.create({
         data: {
             ApplicationID: application.ApplicationID,
-            ...generalDetails,
+            ...sanitizedDetails,
         },
     });
 
