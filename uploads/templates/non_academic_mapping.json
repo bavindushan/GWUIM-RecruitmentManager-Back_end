@@ -1,88 +1,84 @@
 {
-    "logo": { "x": 25, "y": 750, "width": 60, "height": 60 },
+    "logo": { "x": 250, "y": 770, "width": 60, "height": 60 },
 
-    "universityTitle": { "x": 70, "y": 810, "fontSize": 15 },
-    "formTitle": { "x": 250, "y": 790, "fontSize": 13 },
+    "universityTitle": { "x": 40, "y": 750, "fontSize": 15 },
+    "formTitle": { "x": 230, "y": 730, "fontSize": 13 },
 
     "fields": {
-        "Post": { "x": 60, "y": 710, "fontSize": 12 },
-        "FullName": { "x": 60, "y": 690, "fontSize": 12 },
-        "PermanentAddress": { "x": 60, "y": 670, "fontSize": 12 },
-        "PhoneNumber": { "x": 60, "y": 650, "fontSize": 12 },
-        "NIC": { "x": 360, "y": 650, "fontSize": 12 },
-        "Email": { "x": 60, "y": 630, "fontSize": 12 },
-        "DOB": { "x": 360, "y": 630, "fontSize": 12 },
+        "Post": { "x": 40, "y": 690, "fontSize": 12 },
+        "FullName": { "x": 40, "y": 665, "fontSize": 12 },
+        "PermanentAddress": { "x": 40, "y": 640, "fontSize": 12 },
+        "PhoneNumber": { "x": 40, "y": 615, "fontSize": 12 },
+        "NIC": { "x": 360, "y": 615, "fontSize": 12 },
+        "Email": { "x": 40, "y": 590, "fontSize": 12 },
+        "DOB": { "x": 360, "y": 590, "fontSize": 12 },
 
-        "Age_Y": { "x": 60, "y": 610, "fontSize": 12 },
-        "Age_M": { "x": 200, "y": 610, "fontSize": 12 },
-        "Age_D": { "x": 360, "y": 610, "fontSize": 12 },
+        "CivilStatus": { "x": 40, "y": 565, "fontSize": 12 },
+        "Gender": { "x": 360, "y": 565, "fontSize": 12 },
+        "CitizenshipType": { "x": 40, "y": 540, "fontSize": 12 },
+        "CitizenshipDetails": { "x": 360, "y": 540, "fontSize": 12 },
+        "EthnicityOrReligion": { "x": 40, "y": 515, "fontSize": 12 },
 
-        "CivilStatus": { "x": 60, "y": 590, "fontSize": 12 },
-        "Gender": { "x": 360, "y": 590, "fontSize": 12 },
-        "CitizenshipType": { "x": 60, "y": 570, "fontSize": 12 },
-        "CitizenshipDetails": { "x": 360, "y": 570, "fontSize": 12 },
-        "EthnicityOrReligion": { "x": 60, "y": 550, "fontSize": 12 },
-
-        "HeightFeet": { "x": 60, "y": 530, "fontSize": 12 },
-        "HeightInches": { "x": 360, "y": 530, "fontSize": 12 },
-        "ChestInches": { "x": 60, "y": 510, "fontSize": 12 }
+        "HeightFeet": { "x": 40, "y": 490, "fontSize": 12 },
+        "HeightInches": { "x": 360, "y": 490, "fontSize": 12 },
+        "ChestInches": { "x": 40, "y": 465, "fontSize": 12 }
     },
 
     "tables": {
         "GCE_OL": {
             "startX": 80,
-            "startY": 455,
+            "startY": 400,
             "rowHeight": 18,
             "fontSize": 12,
             "columns": {
                 "Subject": 0,
-                "Grade": 170,
-                "ExamYear": 220
+                "Grade": 190,
+                "ExamYear": 300
             }
         },
         "GCE_AL": {
             "startX": 80,
-            "startY": 250,
+            "startY": 170,
             "rowHeight": 18,
             "fontSize": 12,
             "columns": {
                 "Subject": 0,
-                "Grade": 170,
-                "ExamYear": 220
+                "Grade": 190,
+                "ExamYear": 300
             }
         },
         "UniversityEducation": {
-            "startX": 20,
-            "startY": 150,
+            "startX": 40,
+            "startY": 810,
             "rowHeight": 18,
-            "fontSize": 10,
+            "fontSize": 12,
             "columns": {
-                "DegreeOrDiploma": 0,
-                "Institute": 150,
-                "FromYear": 280,
-                "ToYear": 340,
-                "Class": 400,
-                "YearObtained": 460,
-                "IndexNumber": 520
+                "Institute": 0,
+                "DegreeOrDiploma": 100,
+                "FromYear": 200,
+                "ToYear": 250,
+                "Class": 300,
+                "YearObtained": 400,
+                "IndexNumber": 450
             }
         },
         "ProfessionalQualifications": {
-            "startX": 80,
-            "startY": 810,
+            "startX": 40,
+            "startY": 600,
             "rowHeight": 18,
-            "fontSize": 10,
+            "fontSize": 12,
             "columns": {
                 "Institution": 0,
                 "QualificationName": 150,
                 "FromYear": 280,
                 "ToYear": 340,
-                "ResultOrExamPassed": 400
+                "ResultOrExamPassed": 450
             }
         }
     },
 
-    "experience": { "x": 80, "y": 650, "fontSize": 12 },
-    "specialQualifications": { "x": 80, "y": 720, "fontSize": 12 },
+    "experience": { "x": 40, "y": 350, "fontSize": 12 },
+    "specialQualifications": { "x": 40, "y": 220, "fontSize": 12 },
 
     "declaration": {
         "textX": 50,

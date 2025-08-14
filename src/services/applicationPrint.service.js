@@ -239,6 +239,38 @@ exports.generateApplicationPDF = async (applicationID) => {
 
     const font = await drawCommonSections(templateDoc, page, mapping);
 
+    // === Top-right identifiers on page 1 ===
+    const topRightX = 400; // adjust X for right corner
+    let topRightY = 810;   // adjust Y for top
+
+    const identifiers = [
+        { label: "Application ID", value: application.ApplicationID },
+        { label: "Job ID", value: application.jobvacancy?.JobID || '' },
+        { label: "Expiry Date", value: formatDate(application.jobvacancy?.ExpiryDate || '') }
+    ];
+
+    const fontSize = 12;
+    for (const item of identifiers) {
+        page.drawText(`${item.label}:`, {
+            x: topRightX,
+            y: topRightY,
+            size: fontSize,
+            font: helveticaBoldFont,
+            color: rgb(0, 0, 0)
+        });
+
+        page.drawText(`${item.value}`, {
+            x: topRightX + 90, // space after label
+            y: topRightY,
+            size: fontSize,
+            font: helveticaFont,
+            color: rgb(0, 0, 0)
+        });
+
+        topRightY -= 14; // move down for next line
+    }
+
+
     // === General Details on page 1 ===
     if (mapping.fields && application.applicationgeneraldetails) {
         const fontSize = 12;
@@ -286,9 +318,45 @@ exports.generateApplicationPDF = async (applicationID) => {
                 font: helveticaBoldFont,
                 color: rgb(0, 0, 0)
             });
-            drawTable(page, application.gce_ol_results, mapping.tables.GCE_OL, font);
 
-            let lineY = mapping.tables.GCE_OL.startY - (application.gce_ol_results.length * (mapping.tables.GCE_OL.rowHeight || 15)) - 1;
+            const yStart = mapping.tables.GCE_OL.startY;
+            const rowHeight = mapping.tables.GCE_OL.rowHeight || 15;
+            const fontSize = mapping.tables.GCE_OL.fontSize || 12;
+
+            for (let i = 0; i < application.gce_ol_results.length; i++) {
+                const row = application.gce_ol_results[i];
+                const y = yStart - i * rowHeight;
+
+                // Subject
+                page.drawText(row.Subject || '', {
+                    x: mapping.tables.GCE_OL.startX + (mapping.tables.GCE_OL.columns.Subject || 0),
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+
+                // Grade
+                page.drawText(row.Grade || '', {
+                    x: mapping.tables.GCE_OL.startX + (mapping.tables.GCE_OL.columns.Grade || 170),
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+
+                // Exam Year — just use the number as string
+                page.drawText(row.ExamYear != null ? row.ExamYear.toString() : '', {
+                    x: mapping.tables.GCE_OL.startX + (mapping.tables.GCE_OL.columns.ExamYear || 300),
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+            }
+
+            // Draw dividing line
+            const lineY = yStart - (application.gce_ol_results.length * rowHeight) - 1;
             page.drawLine({
                 start: { x: 40, y: lineY },
                 end: { x: 550, y: lineY },
@@ -306,29 +374,45 @@ exports.generateApplicationPDF = async (applicationID) => {
                 font: helveticaBoldFont,
                 color: rgb(0, 0, 0)
             });
-            drawTable(page, application.gce_al_results, mapping.tables.GCE_AL, font);
 
-            let lineY = mapping.tables.GCE_AL.startY - (application.gce_al_results.length * (mapping.tables.GCE_AL.rowHeight || 15)) - 10;
-            page.drawLine({
-                start: { x: 40, y: lineY },
-                end: { x: 550, y: lineY },
-                thickness: 0.5,
-                color: rgb(0, 0, 0),
-            });
-        }
+            const yStart = mapping.tables.GCE_AL.startY;
+            const rowHeight = mapping.tables.GCE_AL.rowHeight || 15;
+            const fontSize = mapping.tables.GCE_AL.fontSize || 12;
 
-        // University Education
-        if (mapping.tables.UniversityEducation && application.universityeducations?.length) {
-            page.drawText("University Education", {
-                x: mapping.tables.UniversityEducation.startX,
-                y: mapping.tables.UniversityEducation.startY + 20,
-                size: 12,
-                font: helveticaBoldFont,
-                color: rgb(0, 0, 0)
-            });
-            drawTable(page, application.universityeducations, mapping.tables.UniversityEducation, font);
+            for (let i = 0; i < application.gce_al_results.length; i++) {
+                const row = application.gce_al_results[i];
+                const y = yStart - i * rowHeight;
 
-            let lineY = mapping.tables.UniversityEducation.startY - (application.universityeducations.length * (mapping.tables.UniversityEducation.rowHeight || 15)) - 10;
+                // Subject
+                page.drawText(row.Subject || '', {
+                    x: mapping.tables.GCE_AL.startX + (mapping.tables.GCE_AL.columns.Subject || 0),
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+
+                // Grade
+                page.drawText(row.Grade || '', {
+                    x: mapping.tables.GCE_AL.startX + (mapping.tables.GCE_AL.columns.Grade || 170),
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+
+                // Exam Year — print number as string
+                page.drawText(row.ExamYear != null ? row.ExamYear.toString() : '', {
+                    x: mapping.tables.GCE_AL.startX + (mapping.tables.GCE_AL.columns.ExamYear || 300),
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+            }
+
+            // Draw dividing line
+            const lineY = yStart - (application.gce_al_results.length * rowHeight) - 10;
             page.drawLine({
                 start: { x: 40, y: lineY },
                 end: { x: 550, y: lineY },
@@ -340,6 +424,79 @@ exports.generateApplicationPDF = async (applicationID) => {
         // ====== SECOND PAGE ======
         let currentPage = secondpage;
 
+        // University Education
+        if (mapping.tables.UniversityEducation && application.universityeducations?.length) {
+            currentPage.drawText("University Education", {
+                x: mapping.tables.UniversityEducation.startX,
+                y: mapping.tables.UniversityEducation.startY + 20,
+                size: 12,
+                font: helveticaBoldFont,
+                color: rgb(0, 0, 0)
+            });
+
+            let y = mapping.tables.UniversityEducation.startY;
+            const lineHeight = 18;
+            const fontSize = mapping.tables.UniversityEducation.fontSize || 10;
+
+            for (const edu of application.universityeducations) {
+                // University name (full width line)
+                currentPage.drawText(`${edu.Institute}`, {
+                    x: mapping.tables.UniversityEducation.startX,
+                    y,
+                    size: fontSize,
+                    font: helveticaBoldFont,
+                    color: rgb(0, 0, 0)
+                });
+                y -= lineHeight;
+
+                // Degree, Period, Class/Grade, IndexNumber in one line
+                const degreeText = `${edu.DegreeOrDiploma}`;
+                const periodText = `${edu.FromYear} – ${edu.ToYear}`;
+                const classText = `${edu.Class} (${edu.YearObtained})`;
+                const indexText = `${edu.IndexNumber}`;
+
+                currentPage.drawText(degreeText, {
+                    x: mapping.tables.UniversityEducation.startX,
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+                currentPage.drawText(periodText, {
+                    x: mapping.tables.UniversityEducation.startX + 210,
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+                currentPage.drawText(classText, {
+                    x: mapping.tables.UniversityEducation.startX + 290,
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+                currentPage.drawText(indexText, {
+                    x: mapping.tables.UniversityEducation.startX + 440,
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+
+                y -= lineHeight + 5; // space before next university
+            }
+
+            // Draw dividing line at the end
+            currentPage.drawLine({
+                start: { x: 40, y: y },
+                end: { x: 550, y: y },
+                thickness: 0.5,
+                color: rgb(0, 0, 0),
+            });
+        }
+
+        // Professional Qualifications
         if (mapping.tables.ProfessionalQualifications && application.professionalqualifications?.length) {
             currentPage.drawText("Professional Qualifications", {
                 x: mapping.tables.ProfessionalQualifications.startX,
@@ -348,16 +505,62 @@ exports.generateApplicationPDF = async (applicationID) => {
                 font: helveticaBoldFont,
                 color: rgb(0, 0, 0)
             });
-            drawTable(currentPage, application.professionalqualifications, mapping.tables.ProfessionalQualifications, font);
 
-            let lineY = mapping.tables.ProfessionalQualifications.startY - (application.professionalqualifications.length * (mapping.tables.ProfessionalQualifications.rowHeight || 15)) - 10;
+            let y = mapping.tables.ProfessionalQualifications.startY;
+            const lineHeight = 18;
+            const fontSize = mapping.tables.ProfessionalQualifications.fontSize || 10;
+
+            for (const pq of application.professionalqualifications) {
+                // Institution name (first row)
+                currentPage.drawText(`${pq.Institution}`, {
+                    x: mapping.tables.ProfessionalQualifications.startX,
+                    y,
+                    size: fontSize,
+                    font: helveticaBoldFont,
+                    color: rgb(0, 0, 0)
+                });
+                y -= lineHeight;
+
+                // QualificationName, Period, ResultOrExamPassed (second row)
+                const qualificationText = `${pq.QualificationName}`;
+                const periodText = `${pq.FromYear} – ${pq.ToYear}`;
+                const resultText = `${pq.ResultOrExamPassed}`;
+
+                currentPage.drawText(qualificationText, {
+                    x: mapping.tables.ProfessionalQualifications.startX,
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+                currentPage.drawText(periodText, {
+                    x: mapping.tables.ProfessionalQualifications.startX + 200,
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+                currentPage.drawText(resultText, {
+                    x: mapping.tables.ProfessionalQualifications.startX + 320,
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0)
+                });
+
+                y -= lineHeight + 5; // space before next qualification
+            }
+
+            // Draw dividing line at the end
             currentPage.drawLine({
-                start: { x: 40, y: lineY },
-                end: { x: 550, y: lineY },
+                start: { x: 40, y: y },
+                end: { x: 550, y: y },
                 thickness: 0.5,
                 color: rgb(0, 0, 0),
             });
         }
+
+        //Language Proficiency
 
         if (mapping.tables.LanguageProficiency && application.languageproficiencies?.length) {
             currentPage.drawText("Language Proficiency", {
@@ -377,6 +580,8 @@ exports.generateApplicationPDF = async (applicationID) => {
                 color: rgb(0, 0, 0),
             });
         }
+
+        //Employment Histories
 
         if (mapping.tables.EmployeeRecords && application.employmenthistories?.length) {
             currentPage.drawText("Employment Histories", {
@@ -400,7 +605,7 @@ exports.generateApplicationPDF = async (applicationID) => {
 
     // === Experience details ===
     if (application.experiencedetails && mapping.experience) {
-        secondpage.drawText("Experience Details:", {
+        secondpage.drawText("Experience Details", {
             x: mapping.experience.x,
             y: mapping.experience.y + 15,
             size: mapping.experience.fontSize || 11,
@@ -415,11 +620,18 @@ exports.generateApplicationPDF = async (applicationID) => {
             secondpage.drawText(exp.Description || '', { x, y, size: fontSize, font, color: rgb(0, 0, 0) });
             y -= 15;
         }
+
+        secondpage.drawLine({
+            start: { x: 40, y: y - 5 },
+            end: { x: 550, y: y - 5 },
+            thickness: 0.5,
+            color: rgb(0, 0, 0),
+        });
     }
 
     // === Special qualifications ===
     if (application.specialqualifications && mapping.specialQualifications) {
-        secondpage.drawText("Special Qualifications:", {
+        secondpage.drawText("Special Qualifications / Extra-curricular Activities ", {
             x: mapping.specialQualifications.x,
             y: mapping.specialQualifications.y + 15,
             size: mapping.specialQualifications.fontSize || 11,
@@ -434,6 +646,13 @@ exports.generateApplicationPDF = async (applicationID) => {
             secondpage.drawText(sq.Description || '', { x, y, size: fontSize, font, color: rgb(0, 0, 0) });
             y -= 15;
         }
+
+        secondpage.drawLine({
+            start: { x: 40, y: y - 5 },
+            end: { x: 550, y: y - 5 },
+            thickness: 0.5,
+            color: rgb(0, 0, 0),
+        });
     }
 
     return await templateDoc.save();
