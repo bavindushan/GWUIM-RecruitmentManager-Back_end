@@ -32,8 +32,8 @@
             "fontSize": 12,
             "columns": {
                 "Subject": 0,
-                "Grade": 190,
-                "ExamYear": 300
+                "Grade": 370,
+                "ExamYear": 420
             }
         },
         "GCE_AL": {
@@ -43,8 +43,8 @@
             "fontSize": 12,
             "columns": {
                 "Subject": 0,
-                "Grade": 190,
-                "ExamYear": 300
+                "Grade": 370,
+                "ExamYear": 420
             }
         },
         "UniversityEducation": {
