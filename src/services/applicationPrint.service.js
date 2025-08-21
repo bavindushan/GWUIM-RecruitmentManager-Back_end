@@ -957,6 +957,78 @@ async function drawSpecialQualifications(page, applicationID, prisma, mapping, f
     return currentY; // return final position if needed by next section
 }
 
+// drawLanguagesProficiency
+async function drawLanguagesProficiency(page, applicationID, prisma, mapping, font, boldFont) {
+    if (!mapping?.tables?.languagesProficiency) return;
+
+    const { x, y, fontSize } = mapping.tables.languagesProficiency;
+
+    // Fetch data from DB using correct field names
+    const languages = await prisma.languageproficiencies.findMany({
+        where: { ApplicationID: applicationID },
+        select: { Language: true, CanSpeak: true, CanRead: true, CanWrite: true, CanTeach: true }
+    });
+
+    let currentY = y;
+
+    // Section title
+    const titleFontSize = 12;
+    page.drawText("Languages Proficiency", {
+        x,
+        y: currentY,
+        size: titleFontSize,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+    });
+
+    // Leave space below title before headers
+    currentY -= titleFontSize + 8;  // 8px padding
+
+    // Table headers
+    const headers = ["Language", "Ability to Work", "Ability to Read", "Ability to Write", "Ability to Teach"];
+    const colWidths = [100, 120, 120, 120, 120]; // Adjust as needed
+    const rowHeight = 20;
+
+    // Draw header row
+    let currentX = x;
+    for (let i = 0; i < headers.length; i++) {
+        page.drawText(headers[i], { x: currentX + 5, y: currentY, size: fontSize, font: boldFont });
+        currentX += colWidths[i];
+    }
+    currentY -= rowHeight;
+
+    const valueMap = { Very_Good: "Very Good", Good: "Good", Fair: "Fair", None: "None" };
+
+    // Draw each language row
+    for (const lang of languages) {
+        currentX = x;
+        const rowData = [
+            lang.Language || "",
+            valueMap[lang.CanSpeak] || "None",
+            valueMap[lang.CanRead] || "None",
+            valueMap[lang.CanWrite] || "None",
+            valueMap[lang.CanTeach] || "None"
+        ];
+
+        for (let i = 0; i < rowData.length; i++) {
+            page.drawText(rowData[i], { x: currentX + 5, y: currentY, size: fontSize, font });
+            currentX += colWidths[i];
+        }
+
+        currentY -= rowHeight;
+    }
+
+    // Optional line below table
+    page.drawLine({
+        start: { x: x, y: currentY + 5 },
+        end: { x: x + 515, y: currentY + 5 },
+        thickness: 0.5,
+        color: rgb(0, 0, 0),
+    });
+
+    return currentY;
+}
+
 // generateAcademicApplicationPDF
 exports.generateAcademicApplicationPDF = async (applicationID) => {
     // 1️⃣ Fetch application data
@@ -1042,6 +1114,10 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
 
     // 1️⃣1️⃣ Draw Special Qualifications on page2
     currentY = await drawSpecialQualifications(page2, applicationID, prisma, mapping, font, boldFont);
+
+    // 1️⃣2️⃣ Draw Languages Proficiency on page2
+    currentY = await drawLanguagesProficiency(page2, applicationID, prisma, mapping, font, boldFont);
+
 
     // 🔟 Draw remaining text areas on page2
     const textAreas = [

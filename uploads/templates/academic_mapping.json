@@ -84,15 +84,10 @@
             "AbilityToTeach": 200
         }
         },
-        "LanguageProficiencyOther": {
-        "startX": 50,
-        "startY": 160,
-        "rowHeight": 18,
-        "columns": {
-            "Language": 0,
-            "AbilityToWork": 100,
-            "AbilityToTeach": 200
-        }
+        "languagesProficiency": {
+            "x": 40,
+            "y": 250,
+            "fontSize": 11
         },
         "EmploymentRecords": {
         "startX": 50,
