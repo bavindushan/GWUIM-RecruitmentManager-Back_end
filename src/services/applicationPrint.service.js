@@ -62,9 +62,14 @@ async function fetchApplicationData(applicationID) {
             professionalqualifications: true,
             researchandpublications: true,
             specialqualifications: true,
-            universityeducations: true,
+            universityeducations: {
+                include: {
+                    first_degree_subjects: true
+                }
+            },
             additionalinfo: true,
             physicalattributes_na: true,
+            secondaryeducation: true,
         }
     });
 
@@ -489,6 +494,350 @@ async function generateNonAcademicApplicationPDF(applicationID, applicationData)
     return await templateDoc.save();
 }
 
+
+// #################################################### Academic Section ##########################################
+// drawAcademicCommonSections
+async function drawAcademicCommonSections(templateDoc, page, mapping) {
+    const pages = templateDoc.getPages();
+    const page2 = pages[1] || templateDoc.addPage();
+
+    const font = await templateDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await templateDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // 1️⃣ Logo
+    const logoPath = path.join(__dirname, '..', 'utils', 'assets', 'university_logo.png');
+    if (fs.existsSync(logoPath)) {
+        const logoImage = await templateDoc.embedPng(fs.readFileSync(logoPath));
+        page.drawImage(logoImage, {
+            x: mapping.logo.x,
+            y: mapping.logo.y,
+            width: mapping.logo.width,
+            height: mapping.logo.height
+        });
+    }
+
+    // 2️⃣ University Title
+    page.drawText(
+        mapping.universityTitle.text || 'Gampaha Wickramarachchi University of Indigenous Medicine, Sri Lanka',
+        {
+            x: mapping.universityTitle.x,
+            y: mapping.universityTitle.y,
+            size: mapping.universityTitle.fontSize,
+            font: boldFont,
+            color: rgb(0, 0, 0)
+        }
+    );
+
+    // 3️⃣ Form Title
+    page.drawText(mapping.formTitle.text || 'Academic Application', {
+        x: mapping.formTitle.x,
+        y: mapping.formTitle.y,
+        size: mapping.formTitle.fontSize,
+        font,
+        color: rgb(0, 0, 0)
+    });
+
+    // 4️⃣ Declaration (page 2)
+    if (mapping.declaration?.text) {
+        page2.drawText(mapping.declaration.text, {
+            x: mapping.declaration.textX,
+            y: mapping.declaration.textY,
+            size: mapping.declaration.fontSize || 10,
+            font,
+            color: rgb(0, 0, 0),
+            maxWidth: 500,
+            lineHeight: 12,
+        });
+    }
+
+    // 5️⃣ Signature placeholders (page 2)
+    page2.drawText('Date:', {
+        x: mapping.signature.dateX,
+        y: mapping.signature.dateY,
+        size: mapping.signature.fontSize || 10,
+        font,
+        color: rgb(0, 0, 0)
+    });
+
+    page2.drawText('Signature:', {
+        x: mapping.signature.signatureX,
+        y: mapping.signature.signatureY,
+        size: mapping.signature.fontSize || 10,
+        font,
+        color: rgb(0, 0, 0)
+    });
+
+    return { font, boldFont };
+}
+
+// drawAcademicGeneralDetails.js
+async function drawAcademicGeneralDetails(page, application, mapping, font, helveticaBoldFont) {
+    const fontSize = 12;
+    const lineHeight = 12;
+    const maxWidth = 350;
+    let lastGeneralDetailY = 0;
+
+    if (mapping.fields) {
+        for (const [field, coords] of Object.entries(mapping.fields)) {
+            let label = generalFieldLabels[field] || field;
+            let text = '';
+
+            // Special mappings
+            if (field === 'PostApplied') {
+                text = application.jobvacancy?.Title || '';
+            } else if (field === 'Department-Faculty') {
+                text = application.jobvacancy?.Department || '';
+            } else if (field === 'Subject') {
+                text = application.jobvacancy?.Description || '';
+            } else if (field === 'Faculty' || field === 'Level') { // map Level to Faculty field
+                text = application.jobvacancy?.Level || '';
+            } else if (field === 'EthnicityOrReligion') {
+                text = application.applicationgeneraldetails?.EthnicityOrReligion || '';
+            } else if (field === 'AgeAtClosingDate') {
+                const dob = new Date(application.applicationgeneraldetails?.DOB);
+                const expiryDate = new Date(application.jobvacancy?.ExpiryDate);
+
+                if (!isNaN(dob.getTime()) && !isNaN(expiryDate.getTime())) {
+                    let age = expiryDate.getFullYear() - dob.getFullYear();
+                    const monthDiff = expiryDate.getMonth() - dob.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && expiryDate.getDate() < dob.getDate())) {
+                        age--;
+                    }
+                    text = age.toString();
+                } else {
+                    text = ''; // fallback if dates are invalid
+                }
+            }
+            // Default to general details
+            else if (application.applicationgeneraldetails && application.applicationgeneraldetails[field] !== undefined) {
+                text = application.applicationgeneraldetails[field];
+            }
+            // Fallback to user
+            else if (application.user && application.user[field] !== undefined) {
+                text = application.user[field];
+            }
+
+            // Format dates (exclude AgeAtClosingDate)
+            if ((field.toLowerCase().includes('date') && field !== 'AgeAtClosingDate') || field.toLowerCase() === 'dob') {
+                text = formatDate(text);
+            }
+
+            // Draw label
+            page.drawText(`${label}:`, {
+                x: coords.x,
+                y: coords.y,
+                size: coords.fontSize || fontSize,
+                font: helveticaBoldFont,
+                color: rgb(0, 0, 0)
+            });
+
+            // Draw value with wrapping
+            const linesCount = drawWrappedText(
+                page,
+                String(text || ''),
+                coords.x + 120,
+                coords.y,
+                maxWidth,
+                font,
+                fontSize,
+                lineHeight
+            );
+
+            lastGeneralDetailY = Math.min(lastGeneralDetailY || coords.y, coords.y - (linesCount - 1) * lineHeight);
+        }
+
+        // Draw line after general details
+        page.drawLine({
+            start: { x: 40, y: lastGeneralDetailY - 10 },
+            end: { x: 550, y: lastGeneralDetailY - 10 },
+            thickness: 0.5,
+            color: rgb(0, 0, 0),
+        });
+    }
+}
+
+// drawAcademicSecondaryEducation
+async function drawAcademicSecondaryEducation(page, application, mapping, font, boldFont) {
+    if (!mapping.tables || !mapping.tables.SecondaryEducation) return;
+
+    const tableMapping = mapping.tables.SecondaryEducation;
+    const tableData = application.secondaryeducation || []; // ✅ Use lowercase
+
+    // Table title
+    let yPos = tableMapping.startY;
+    page.drawText("Secondary Education", {
+        x: tableMapping.startX,
+        y: yPos,
+        size: 12,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+    });
+    yPos -= 20;
+
+    // Column headers
+    for (const [colKey, colX] of Object.entries(tableMapping.columns)) {
+        page.drawText(colKey, {
+            x: tableMapping.startX + colX,
+            y: yPos,
+            size: 12,
+            font: boldFont,
+            color: rgb(0, 0, 0)
+        });
+    }
+
+    yPos -= tableMapping.rowHeight;
+
+    // Row data
+    tableData.forEach(row => {
+        for (const [colKey, colX] of Object.entries(tableMapping.columns)) {
+            let value = '';
+
+            // Combine ExaminationPassed + PassedYear into one column
+            if (colKey === 'ExamAndYear') {
+                value = `${row.ExaminationPassed || ''} - ${row.PassedYear || ''}`;
+            } else {
+                value = row[colKey] || '';
+            }
+
+            page.drawText(String(value), {
+                x: tableMapping.startX + colX,
+                y: yPos,
+                size: 11,
+                font,
+                color: rgb(0, 0, 0)
+            });
+        }
+        yPos -= tableMapping.rowHeight;
+    });
+
+    // Draw line after table
+    page.drawLine({
+        start: { x: tableMapping.startX, y: yPos - 5 },
+        end: { x: tableMapping.startX + 515, y: yPos - 5 },
+        thickness: 0.5,
+        color: rgb(0, 0, 0),
+    });
+
+    return yPos; // Return last Y for chaining other sections
+}
+
+// drawAcademicHigherEducation
+async function drawAcademicHigherEducation(page, application, mapping, font, boldFont) {
+    if (!mapping.tables || !mapping.tables.HigherEducation) return;
+
+    const tableMapping = mapping.tables.HigherEducation;
+    const tableData = application.universityeducations || []; // Prisma relation
+
+    // Table title
+    let yPos = tableMapping.startY;
+    page.drawText("Higher Education", {
+        x: tableMapping.startX,
+        y: yPos,
+        size: 12,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+    });
+    yPos -= 20;
+
+    // Row data in two-line format
+    tableData.forEach(row => {
+        // Line 1: University Name
+        page.drawText(String(row.Institute || ''), {
+            x: tableMapping.startX,
+            y: yPos,
+            size: 11,
+            font: boldFont,
+            color: rgb(0, 0, 0)
+        });
+        yPos -= 14; // Adjust line spacing
+
+        // Line 2: Degree + Year Range + Result + YearObtained + RegNo
+        const resultWithYear = row.Class ? `${row.Class} (${String(row.YearObtained || '')})` : '';
+        page.drawText(String(row.DegreeOrDiploma || ''), { x: tableMapping.startX + tableMapping.columns.DegreeOrDiploma, y: yPos, size: 11, font, color: rgb(0, 0, 0) });
+        page.drawText(String(row.FromYear || ''), { x: tableMapping.startX + tableMapping.columns.FromYear, y: yPos, size: 11, font, color: rgb(0, 0, 0) });
+        page.drawText(String(row.ToYear || ''), { x: tableMapping.startX + tableMapping.columns.ToYear, y: yPos, size: 11, font, color: rgb(0, 0, 0) });
+        page.drawText(resultWithYear, { x: tableMapping.startX + tableMapping.columns.Class, y: yPos, size: 11, font, color: rgb(0, 0, 0) });
+        page.drawText(String(row.IndexNumber || ''), { x: tableMapping.startX + tableMapping.columns.IndexNumber, y: yPos, size: 11, font, color: rgb(0, 0, 0) });
+
+        yPos -= tableMapping.rowHeight; // Space after each entry
+    });
+
+    // Draw line after table
+    page.drawLine({
+        start: { x: tableMapping.startX, y: yPos - 5 },
+        end: { x: tableMapping.startX + 515, y: yPos - 5 },
+        thickness: 0.5,
+        color: rgb(0, 0, 0),
+    });
+
+    return yPos; // Return last Y for chaining
+}
+
+// drawFirstDegreeSubjects
+async function drawFirstDegreeSubjects(page, application, mapping, font, boldFont, startY) {
+    const tableMapping = mapping?.FirstDegreeMainSubjects;
+
+    // If mapping is missing, just use defaults
+    const startX = tableMapping?.startX ?? 40;
+    const rowHeight = tableMapping?.rowHeight ?? 18;
+    const subjectColumn = tableMapping?.columns?.Subject ?? 0;
+
+    let yPos = startY ?? tableMapping?.startY ?? 770;
+
+    page.drawText("First Degree Main Subjects", {
+        x: startX,
+        y: yPos,
+        size: 12,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+    });
+    yPos -= 18;
+
+    // Collect subjects
+    const subjects = [];
+    application.universityeducations?.forEach(uni => {
+        uni.first_degree_subjects?.forEach(sub => {
+            if (sub.MainSubject) subjects.push(sub.MainSubject);
+        });
+    });
+
+    // Draw two per line
+    for (let i = 0; i < subjects.length; i += 2) {
+        const leftSubject = subjects[i] || '';
+        const rightSubject = subjects[i + 1] || '';
+
+        page.drawText(leftSubject, {
+            x: startX + subjectColumn,
+            y: yPos,
+            size: 11,
+            font,
+            color: rgb(0, 0, 0)
+        });
+
+        if (rightSubject) {
+            page.drawText(rightSubject, {
+                x: startX + subjectColumn + 200,
+                y: yPos,
+                size: 11,
+                font,
+                color: rgb(0, 0, 0)
+            });
+        }
+
+        yPos -= rowHeight;
+    }
+
+    // Draw line after table
+    page.drawLine({
+        start: { x: startX, y: yPos - 5 },
+        end: { x: startX + 515, y: yPos - 5 },
+        thickness: 0.5,
+        color: rgb(0, 0, 0),
+    });
+
+    return yPos;
+}
+
 // generateAcademicApplicationPDF
 exports.generateAcademicApplicationPDF = async (applicationID) => {
     // 1️⃣ Fetch application data
@@ -497,59 +846,98 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
     // 2️⃣ Load academic template and mapping
     const { pdfDoc: templateDoc, mapping } = await loadTemplateAndMapping('Academic');
 
-    // 3️⃣ Embed fonts
-    const helveticaFont = await templateDoc.embedFont(StandardFonts.Helvetica);
-    const helveticaBoldFont = await templateDoc.embedFont(StandardFonts.HelveticaBold);
+    // 3️⃣ Get pages
+    const pages = templateDoc.getPages();
+    const page1 = pages[0];
+    const page2 = pages[1] || templateDoc.addPage();
 
-    // 4️⃣ Get pages
-    const page = templateDoc.getPages()[0];
-    const secondPage = templateDoc.getPages()[1];
+    // 4️⃣ Draw common sections (logo, titles, declaration, signature placeholders)
+    const { font, boldFont } = await drawAcademicCommonSections(templateDoc, page1, mapping);
 
-    // 5️⃣ Draw header: logo, university name, form title
-    if (mapping.logo) {
-        // Example: draw logo if required (optional)
-        // const logoBytes = fs.readFileSync('path/to/logo.png');
-        // const pngImage = await templateDoc.embedPng(logoBytes);
-        // page.drawImage(pngImage, { x: mapping.logo.x, y: mapping.logo.y, width: mapping.logo.width, height: mapping.logo.height });
-    }
-
-    page.drawText('Gampaha Wickramarachchi University of Indigenous Medicine, Sri Lanka', {
-        x: mapping.universityTitle.x,
-        y: mapping.universityTitle.y,
-        size: mapping.universityTitle.fontSize,
-        font: helveticaBoldFont,
-        color: rgb(0, 0, 0)
-    });
-
-    page.drawText('Academic Application', {
-        x: mapping.formTitle.x,
-        y: mapping.formTitle.y,
-        size: mapping.formTitle.fontSize,
-        font: helveticaBoldFont,
-        color: rgb(0, 0, 0)
-    });
-
-    // 6️⃣ Draw top-right identifiers
-    const topRightX = mapping.applicationNo.x;
+    // 5️⃣ Draw top-right identifiers on page1
     let topRightY = mapping.applicationNo.y;
     const identifiers = [
         { label: 'Application ID', value: application.ApplicationID },
         { label: 'Job ID', value: application.jobvacancy?.JobID || '' },
-        { label: 'Expiry Date', value: formatDate(application.jobvacancy?.ExpiryDate || '') }
+        { label: 'Closing Date', value: formatDate(application.jobvacancy?.ExpiryDate || '') }
     ];
     for (const item of identifiers) {
-        page.drawText(`${item.label}:`, { x: topRightX, y: topRightY, size: 10, font: helveticaBoldFont, color: rgb(0, 0, 0) });
-        page.drawText(`${item.value}`, { x: topRightX + 90, y: topRightY, size: 10, font: helveticaFont, color: rgb(0, 0, 0) });
+        page1.drawText(`${item.label}:`, {
+            x: mapping.applicationNo.x,
+            y: topRightY,
+            size: mapping.applicationNo.fontSize || 10,
+            font: boldFont,
+            color: rgb(0, 0, 0)
+        });
+        page1.drawText(`${item.value}`, {
+            x: mapping.applicationNo.x + 90,
+            y: topRightY,
+            size: mapping.applicationNo.fontSize || 10,
+            font,
+            color: rgb(0, 0, 0)
+        });
         topRightY -= 14;
     }
 
-    // 7️⃣ TODO: Draw main fields (PostApplied, Subject, Department, etc.)
-    // 8️⃣ TODO: Draw tables
-    // 9️⃣ TODO: Draw remaining sections and declaration
+    // 🔹 Draw General Details (Personal Info Section) on page1
+    await drawAcademicGeneralDetails(page1, application, mapping, font, boldFont);
 
-    // 10️⃣ Return PDF bytes
+    // 6️⃣ Draw main academic fields on page1
+    for (const [fieldKey, coords] of Object.entries(mapping.fields)) {
+        if (application[fieldKey] !== undefined && application[fieldKey] !== null) {
+            page1.drawText(String(application[fieldKey]), {
+                x: coords.x,
+                y: coords.y,
+                size: coords.fontSize || 10,
+                font,
+                color: rgb(0, 0, 0)
+            });
+        }
+    }
+
+    // 7️⃣ Draw Secondary Education Table on page1
+    await drawAcademicSecondaryEducation(page1, application, mapping, font, boldFont);
+
+    // 8️⃣ Draw Higher Education Table on page1
+    let currentY = await drawAcademicHigherEducation(page1, application, mapping, font, boldFont);
+
+    // 9️⃣ Draw First Degree Subjects on page2
+    currentY = await drawFirstDegreeSubjects(
+        page1,
+        application,
+        mapping,
+        font,
+        boldFont,
+        mapping?.FirstDegreeMainSubjects?.startY ?? 200
+    );
+
+    // 🔟 Draw remaining text areas on page2
+    const textAreas = [
+        'experienceDescription',
+        'researchPublications',
+        'specialQualifications',
+        'nonRelatedReferees',
+        'additionalInfo'
+    ];
+    textAreas.forEach(areaKey => {
+        if (application[areaKey]) {
+            const coords = mapping[areaKey];
+            page2.drawText(String(application[areaKey]), {
+                x: coords.x,
+                y: coords.y,
+                size: coords.fontSize || 10,
+                font,
+                color: rgb(0, 0, 0),
+                maxWidth: 500,
+                lineHeight: 12
+            });
+        }
+    });
+
+    // 1️⃣1️⃣ Return PDF bytes
     return await templateDoc.save();
 };
+
 
 // Main function to generate PDF
 exports.generateApplicationPDF = async (applicationID) => {
@@ -561,7 +949,7 @@ exports.generateApplicationPDF = async (applicationID) => {
 
     // 3️⃣ Route to the correct generator
     if (applicationType === 'Academic') {
-        return await generateAcademicApplicationPDF(applicationID);
+        return await exports.generateAcademicApplicationPDF(applicationID);
     } else {
         return await generateNonAcademicApplicationPDF(applicationID, application);
     }

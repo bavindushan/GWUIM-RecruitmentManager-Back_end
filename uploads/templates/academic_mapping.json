@@ -1,59 +1,62 @@
 {
-    "logo": { "x": 50, "y": 750, "width": 80, "height": 80 },
+    "logo": { "x": 250, "y": 770, "width": 60, "height": 60 },
 
-    "applicationNo": { "x": 450, "y": 780, "fontSize": 10 },
-    "postCode": { "x": 450, "y": 765, "fontSize": 10 },
-    "closingDate": { "x": 450, "y": 750, "fontSize": 10 },
+    "applicationNo": { "x": 430, "y": 800, "fontSize": 11 },
+    "postCode": { "x": 430, "y": 765, "fontSize": 11 },
+    "closingDate": { "x": 430, "y": 750, "fontSize": 11 },
 
-    "universityTitle": { "x": 100, "y": 780, "fontSize": 14 },
-    "formTitle": { "x": 220, "y": 760, "fontSize": 12 },
+    "universityTitle": { "x": 40, "y": 750, "fontSize": 15},
+    "formTitle": { "x": 230, "y": 730, "fontSize": 13 },
 
     "fields": {
-        "PostApplied": { "x": 150, "y": 730, "fontSize": 12 },
-        "Subject": { "x": 150, "y": 710, "fontSize": 12 },
-        "Department": { "x": 150, "y": 690, "fontSize": 12 },
-        "Faculty": { "x": 150, "y": 670, "fontSize": 12 },
-        "FullName": { "x": 150, "y": 650, "fontSize": 12 },
-        "NameWithInitials": { "x": 150, "y": 630, "fontSize": 12 },
-        "CivilStatus": { "x": 150, "y": 610, "fontSize": 12 },
-        "Gender": { "x": 150, "y": 590, "fontSize": 12 },
-        "NIC": { "x": 150, "y": 570, "fontSize": 12 },
-        "PresentAddress": { "x": 150, "y": 550, "fontSize": 12 },
-        "PermanentAddress": { "x": 150, "y": 530, "fontSize": 12 },
-        "PhoneNumber": { "x": 150, "y": 510, "fontSize": 12 },
-        "DOB": { "x": 150, "y": 490, "fontSize": 12 },
-        "AgeAtClosingDate": { "x": 150, "y": 470, "fontSize": 12 },
-        "Citizenship": { "x": 150, "y": 450, "fontSize": 12 },
-        "CitizenshipType": { "x": 150, "y": 430, "fontSize": 12 },
-        "CitizenshipDetails": { "x": 150, "y": 410, "fontSize": 12 }
+        "PostApplied": { "x": 40, "y": 690, "fontSize": 12 },
+        "Subject": { "x": 40, "y": 670, "fontSize": 12 },
+        "Department-Faculty": { "x": 40, "y": 650, "fontSize": 12 },
+        "Level": { "x": 40, "y": 630, "fontSize": 12 },
+        "FullName": { "x": 40, "y": 610, "fontSize": 12 },
+        "NameWithInitials": { "x": 40, "y": 590, "fontSize": 12 },
+        "CivilStatus": { "x": 40, "y": 570, "fontSize": 12 },
+        "Gender": { "x": 350, "y": 570, "fontSize": 12 },
+        "NIC": { "x": 40, "y": 550, "fontSize": 12 },
+        "PresentAddress": { "x": 40, "y": 530, "fontSize": 12 },
+        "PermanentAddress": { "x": 40, "y": 510, "fontSize": 12 },
+        "PhoneNumber": { "x": 40, "y": 490, "fontSize": 12 },
+        "DOB": { "x": 350, "y": 490, "fontSize": 12 },
+        "AgeAtClosingDate": { "x": 40, "y": 470, "fontSize": 12 },
+        "EthnicityOrReligion": { "x": 350, "y": 470, "fontSize": 12 },
+        "CitizenshipType": { "x": 40, "y": 450, "fontSize": 12 },
+        "CitizenshipDetails": { "x": 350, "y": 450, "fontSize": 12 }
     },
 
     "tables": {
         "SecondaryEducation": {
-        "startX": 50,
-        "startY": 390,
+        "startX": 40,
+        "startY": 420,
         "rowHeight": 18,
         "columns": {
             "School": 0,
-            "ExamPassed": 200,
-            "Year": 350
+            "FromYear": 310,
+            "ToYear": 380,
+            "ExamAndYear": 440
         }
         },
         "HigherEducation": {
-        "startX": 50,
+        "startX": 40,
         "startY": 320,
         "rowHeight": 18,
         "columns": {
-            "Institution": 0,
-            "FromYear": 150,
-            "ToYear": 200,
-            "DegreeObtained": 250,
-            "ClassYear": 350
+            "Institute": 0,
+                "DegreeOrDiploma": 0,
+                "FromYear": 230,
+                "ToYear": 260,
+                "Class": 300,
+                "YearObtained": 400,
+                "IndexNumber": 450
         }
         },
         "FirstDegreeMainSubjects": {
-        "startX": 50,
-        "startY": 280,
+        "startX": 40,
+        "startY": 250,
         "rowHeight": 18,
         "columns": {
             "Subject": 0
@@ -110,15 +113,15 @@
 
     "declaration": {
         "textX": 50,
-        "textY": 10,
+        "textY": 80,
         "fontSize": 10,
         "text": "I hereby declare that the particulars furnished by me in the application are true and accurate. I am also aware that if any particulars contained herein are found to be false or incorrect, I am liable to disqualify to the post, if the inaccuracy is discovered before the selection and dismissal without any compensation or to take any legal action against me if the inaccuracy is discovered after the appointment."
     },
 
     "signature": {
-        "dateX": 350,
-        "dateY": 5,
-        "signatureX": 500,
-        "signatureY": 5
+        "dateX": 150,
+        "dateY": 10,
+        "signatureX": 400,
+        "signatureY": 10
     }
 }

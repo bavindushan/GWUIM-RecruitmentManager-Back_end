@@ -51,6 +51,7 @@ model application {
   physicalattributes_na      physicalattributes_na[]
   professionalqualifications professionalqualifications[]
   researchandpublications    researchandpublications[]
+  secondaryeducation         secondaryeducation[]
   specialqualifications      specialqualifications[]
   universityeducations       universityeducations[]
 
@@ -238,16 +239,17 @@ model superadmin {
 }
 
 model universityeducations {
-  UE_ID           Int          @id @default(autoincrement())
-  ApplicationID   Int?
-  DegreeOrDiploma String?      @db.VarChar(100)
-  Institute       String?      @db.VarChar(150)
-  FromYear        Int?         @db.Year
-  ToYear          Int?         @db.Year
-  Class           String?      @db.VarChar(50)
-  YearObtained    Int?         @db.Year
-  IndexNumber     String?      @db.VarChar(50)
-  application     application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "universityeducations_ibfk_1")
+  UE_ID                 Int                     @id @default(autoincrement())
+  ApplicationID         Int?
+  DegreeOrDiploma       String?                 @db.VarChar(100)
+  Institute             String?                 @db.VarChar(150)
+  FromYear              Int?                    @db.Year
+  ToYear                Int?                    @db.Year
+  Class                 String?                 @db.VarChar(50)
+  YearObtained          Int?                    @db.Year
+  IndexNumber           String?                 @db.VarChar(50)
+  first_degree_subjects first_degree_subjects[]
+  application           application?            @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "universityeducations_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
@@ -275,6 +277,30 @@ model physicalattributes_na {
   application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "physicalattributes_na_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+}
+
+model secondaryeducation {
+  SE_ID             Int         @id @default(autoincrement())
+  ApplicationID     Int
+  School            String      @db.VarChar(255)
+  FromYear          Int         @db.Year
+  ToYear            Int         @db.Year
+  ExaminationPassed String      @db.VarChar(255)
+  PassedYear        Int         @db.Year
+  application       application @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "secondaryeducation_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+}
+
+model first_degree_subjects {
+  SubjectID             Int                  @id @default(autoincrement())
+  UniversityEducationID Int
+  MainSubject           String               @db.VarChar(255)
+  CreatedAt             DateTime?            @default(now()) @db.Timestamp(0)
+  UpdatedAt             DateTime?            @default(now()) @db.Timestamp(0)
+  universityeducations  universityeducations @relation(fields: [UniversityEducationID], references: [UE_ID], onDelete: Cascade, onUpdate: NoAction, map: "first_degree_subjects_ibfk_1")
+
+  @@index([UniversityEducationID], map: "UniversityEducationID")
 }
 
 enum applicationtemplate_Type {
