@@ -64,12 +64,14 @@
         },
         "ProfessionalQualifications": {
         "startX": 50,
-        "startY": 240,
+        "startY": 800,
         "rowHeight": 18,
         "columns": {
             "Institution": 0,
-            "Qualification": 200,
-            "Year": 350
+                "QualificationName": 150,
+                "FromYear": 280,
+                "ToYear": 340,
+                "ResultOrExamPassed": 450
         }
         },
         "LanguageProficiencyMain": {

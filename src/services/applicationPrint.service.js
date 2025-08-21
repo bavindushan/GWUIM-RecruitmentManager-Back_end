@@ -838,6 +838,79 @@ async function drawFirstDegreeSubjects(page, application, mapping, font, boldFon
     return yPos;
 }
 
+// drawProfessionalQualifications
+async function drawProfessionalQualifications(page, application, mapping, font, boldFont, startY) {
+    const tableMapping = mapping?.ProfessionalQualifications || {};
+
+    // Defaults if mapping missing
+    const startX = tableMapping?.startX ?? 50;
+    const rowHeight = tableMapping?.rowHeight ?? 18;
+    const columns = tableMapping?.columns || { Institution: 0, Qualification: 200, Year: 350 };
+    let yPos = startY ?? tableMapping?.startY ?? 800;
+
+    // Section title
+    page.drawText("Professional Qualifications", {
+        x: startX,
+        y: yPos,
+        size: 12,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+    });
+    yPos -= 18;
+
+    // Iterate through professional qualifications
+    application.professionalqualifications?.forEach(pq => {
+        // Line 1: Institution
+        if (pq.Institution) {
+            page.drawText(pq.Institution, {
+                x: startX + columns.Institution,
+                y: yPos,
+                size: 11,
+                font: boldFont,
+                color: rgb(0, 0, 0)
+            });
+            yPos -= rowHeight;
+        }
+
+        // Line 2: Qualification, FromYear–ToYear, ResultOrExamPassed
+        const yearText = `${pq.FromYear || ''}-${pq.ToYear || ''}`;
+        page.drawText(pq.QualificationName || '', {
+            x: startX,
+            y: yPos,
+            size: 11,
+            font,
+            color: rgb(0, 0, 0)
+        });
+        page.drawText(yearText, {
+            x: startX + columns.Year,
+            y: yPos,
+            size: 11,
+            font,
+            color: rgb(0, 0, 0)
+        });
+        page.drawText(pq.ResultOrExamPassed || '', {
+            x: startX + columns.Year + 80, 
+            y: yPos,
+            size: 11,
+            font,
+            color: rgb(0, 0, 0)
+        });
+
+        yPos -= rowHeight;
+
+    });
+
+    // Optional line
+    page.drawLine({
+        start: { x: startX, y: yPos + 5 },
+        end: { x: startX + 515, y: yPos + 5 },
+        thickness: 0.5,
+        color: rgb(0, 0, 0),
+    });
+
+    return yPos;
+}
+
 // generateAcademicApplicationPDF
 exports.generateAcademicApplicationPDF = async (applicationID) => {
     // 1️⃣ Fetch application data
@@ -909,6 +982,16 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
         font,
         boldFont,
         mapping?.FirstDegreeMainSubjects?.startY ?? 200
+    );
+
+    // 🔟 Draw Professional Qualifications on page2
+    currentY = await drawProfessionalQualifications(
+        page2, // <-- use page2 here
+        application,
+        mapping,
+        font,
+        boldFont,
+        mapping?.ProfessionalQualifications?.startY ?? 810
     );
 
     // 🔟 Draw remaining text areas on page2
