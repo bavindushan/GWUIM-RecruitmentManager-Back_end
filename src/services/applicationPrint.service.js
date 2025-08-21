@@ -889,7 +889,7 @@ async function drawProfessionalQualifications(page, application, mapping, font, 
             color: rgb(0, 0, 0)
         });
         page.drawText(pq.ResultOrExamPassed || '', {
-            x: startX + columns.Year + 80, 
+            x: startX + columns.Year + 80,
             y: yPos,
             size: 11,
             font,
@@ -909,6 +909,52 @@ async function drawProfessionalQualifications(page, application, mapping, font, 
     });
 
     return yPos;
+}
+
+// drawSpecialQualifications
+async function drawSpecialQualifications(page, applicationID, prisma, mapping, font, boldFont) {
+    const { x, y, fontSize } = mapping.specialQualifications;
+
+    // Fetch Special Qualifications from DB
+    const specialQualifications = await prisma.specialqualifications.findMany({
+        where: { ApplicationID: applicationID },
+        select: { Description: true }
+    });
+
+    let currentY = y;
+
+    // Section title
+    page.drawText("Special Qualifications", {
+        x,
+        y: currentY,  // use currentY for consistency
+        size: 12,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+    });
+
+    currentY -= 18; // space after title
+
+    // Draw each Special Qualification description line by line
+    for (const sq of specialQualifications) {
+        if (sq.Description && sq.Description.trim() !== "") {
+            page.drawText(sq.Description, {
+                x,
+                y: currentY,
+                size: fontSize,
+                font,
+                color: rgb(0, 0, 0)
+            });
+            currentY -= 20; // move down for next line
+        }
+    }
+    // Optional line
+    page.drawLine({
+        start: { x: x, y: currentY + 5 },
+        end: { x: x + 515, y: currentY + 5 },
+        thickness: 0.5,
+        color: rgb(0, 0, 0),
+    });
+    return currentY; // return final position if needed by next section
 }
 
 // generateAcademicApplicationPDF
@@ -993,6 +1039,9 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
         boldFont,
         mapping?.ProfessionalQualifications?.startY ?? 810
     );
+
+    // 1️⃣1️⃣ Draw Special Qualifications on page2
+    currentY = await drawSpecialQualifications(page2, applicationID, prisma, mapping, font, boldFont);
 
     // 🔟 Draw remaining text areas on page2
     const textAreas = [
