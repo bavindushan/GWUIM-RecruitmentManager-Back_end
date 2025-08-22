@@ -1030,10 +1030,10 @@ async function drawLanguagesProficiency(page, applicationID, prisma, mapping, fo
     return currentY;
 }
 
-// drawEmployeeRecords - rewritten for page3
-async function drawEmployeeRecords(page, applicationID, prisma, font, boldFont) {
-    console.log("drawEmployeeRecords method working!!");
-    console.log("ApplicationID passed to drawEmployeeRecords:", applicationID);
+// drawEmployeeRecords
+async function drawEmployeeRecords(page, applicationID, prisma, font, boldFont, mapping) {
+    // console.log("drawEmployeeRecords method working!!");
+    // console.log("ApplicationID passed to drawEmployeeRecords:", applicationID);
 
     // Fetch employment records for the given applicationID
     const records = await prisma.employmenthistories.findMany({
@@ -1047,7 +1047,7 @@ async function drawEmployeeRecords(page, applicationID, prisma, font, boldFont) 
         }
     });
 
-    console.log("Employment Records fetched:", records);
+    //console.log("Employment Records fetched:", records);
 
     if (!records || records.length === 0) {
         console.log("No employment records found for this application.");
@@ -1055,19 +1055,28 @@ async function drawEmployeeRecords(page, applicationID, prisma, font, boldFont) 
     }
 
     // --- Table layout ---
-    const startX = 50;           // left margin
-    let currentY = 720;          // starting Y coordinate from top
-    const rowHeight = 20;        // space between rows
+    const startX = mapping?.EmploymentRecords?.startX ?? 50; // fallback
+    let currentY = mapping?.EmploymentRecords?.startY ?? 800; // starting Y coordinate
+    const rowHeight = mapping?.EmploymentRecords?.rowHeight ?? 18;
 
-    // Column X offsets relative to startX
-    const colPositions = [0, 150, 350, 420, 490]; 
+    // Column positions relative to startX
+    const colPositions = mapping?.EmploymentRecords?.columns
+        ? [
+            mapping.EmploymentRecords.columns.PostHeld,
+            mapping.EmploymentRecords.columns.Institution,
+            mapping.EmploymentRecords.columns.FromDate,
+            mapping.EmploymentRecords.columns.ToDate,
+            mapping.EmploymentRecords.columns.LastSalary
+            ]
+        : [0, 150, 350, 410, 480]; // default positions
+
     const headers = ["Post Held", "Institution", "From Date", "To Date", "Last Salary"];
 
     // Section title
     page.drawText("Employment Records", {
         x: startX,
         y: currentY,
-        size: 14,
+        size: 12,
         font: boldFont,
         color: rgb(0, 0, 0)
     });
@@ -1079,7 +1088,7 @@ async function drawEmployeeRecords(page, applicationID, prisma, font, boldFont) 
         page.drawText(headers[i], {
             x: startX + colPositions[i],
             y: currentY,
-            size: 12,
+            size: 11,
             font: boldFont,
             color: rgb(0, 0, 0)
         });
@@ -1088,8 +1097,8 @@ async function drawEmployeeRecords(page, applicationID, prisma, font, boldFont) 
     currentY -= rowHeight;
 
     // Helper functions
-    const formatDate = (date) => date ? new Date(date).toLocaleDateString() : "";
-    const formatSalary = (salary) => salary != null ? salary.toLocaleString(undefined, { minimumFractionDigits: 2 }) : "";
+    const formatDate = (date) => (date ? new Date(date).toLocaleDateString() : "");
+    const formatSalary = (salary) => (salary != null ? salary.toLocaleString(undefined, { minimumFractionDigits: 2 }) : "");
 
     // Draw each record row
     for (const rec of records) {
@@ -1105,7 +1114,7 @@ async function drawEmployeeRecords(page, applicationID, prisma, font, boldFont) 
             page.drawText(rowData[i], {
                 x: startX + colPositions[i],
                 y: currentY,
-                size: 12,
+                size: 11,
                 font,
                 color: rgb(0, 0, 0)
             });
@@ -1217,9 +1226,7 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
     currentY = await drawLanguagesProficiency(page2, applicationID, prisma, mapping, font, boldFont);
 
     // 1️⃣4️⃣ Draw Employment Records table on page3
-    currentY = await drawEmployeeRecords(page3, applicationID, prisma, mapping, font, boldFont);
-
-    page3.drawText("TEST PRINT", { x: 50, y: 750, size: 12, font: boldFont, color: rgb(0, 0, 0) });
+    currentY = await drawEmployeeRecords(page3, applicationID, prisma, font, boldFont, mapping);
 
 
     // 1️⃣5️⃣ Draw remaining text areas on page2
