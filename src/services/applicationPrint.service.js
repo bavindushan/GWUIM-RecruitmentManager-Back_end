@@ -1321,6 +1321,64 @@ async function drawNonRelatedReferees(page, applicationID, prisma, mapping, font
     return currentY;
 }
 
+// drawAdditionalInformation
+async function drawAdditionalInformation(page, applicationID, mapping, font, boldFont) {
+    if (!mapping?.additionalInformation) return;
+
+    // 1️⃣ Fetch the application data including additional info
+    const application = await fetchApplicationData(applicationID);
+
+    const { x, y, fontSize, lineHeight, maxWidth, title } = mapping.additionalInformation;
+
+    let currentY = y;
+
+    // 2️⃣ Draw section title
+    page.drawText(title, {
+        x,
+        y: currentY,
+        size: fontSize + 1,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+    });
+
+    currentY -= lineHeight + 2;
+
+    // 3️⃣ Join multiple additional info rows into a single string
+    const contentArray = application?.additionalinfo || [];
+    const content = contentArray.length
+        ? contentArray.map(item => item.Content).filter(Boolean).join(' ')
+        : "No additional information provided.";
+
+    // 4️⃣ Split content into lines based on maxWidth
+    const words = content.split(' ');
+    let line = '';
+    for (const word of words) {
+        const testLine = line ? line + ' ' + word : word;
+        if (testLine.length * (fontSize * 0.55) > maxWidth) {
+            page.drawText(line, { x, y: currentY, size: fontSize, font, color: rgb(0, 0, 0) });
+            line = word;
+            currentY -= lineHeight;
+        } else {
+            line = testLine;
+        }
+    }
+
+    if (line) {
+        page.drawText(line, { x, y: currentY, size: fontSize, font, color: rgb(0, 0, 0) });
+        currentY -= lineHeight;
+    }
+
+    // Optional horizontal line below section
+    page.drawLine({
+        start: { x: x, y: currentY + 5 },
+        end: { x: x + 515, y: currentY + 5 },
+        thickness: 0.5,
+        color: rgb(0, 0, 0),
+    });
+
+    return currentY;
+}
+
 // generateAcademicApplicationPDF
 exports.generateAcademicApplicationPDF = async (applicationID) => {
 
@@ -1424,6 +1482,8 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
     // 1️⃣6️⃣ Draw Non-Related Referees on page2
     currentY = await drawNonRelatedReferees(page3, applicationID, prisma, mapping, font, boldFont);
 
+    // Draw Additional Information on page2 (or whichever page)
+    currentY = await drawAdditionalInformation(page3, applicationID, mapping, font, boldFont);
 
 
     // 1️⃣5️⃣ Draw remaining text areas on page2

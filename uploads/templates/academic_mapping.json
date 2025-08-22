@@ -118,7 +118,15 @@
             "Address": 50          
         },
         "spacing": 6             
-        },
+    },
+    "additionalInformation": {
+        "x": 50,
+        "y": 220,
+        "fontSize": 11,
+        "lineHeight": 14,
+        "maxWidth": 500,
+        "title": "Additional Information"
+    },
     "declaration": {
         "textX": 50,
         "textY": 80,
