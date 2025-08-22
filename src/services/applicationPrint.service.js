@@ -1126,7 +1126,7 @@ async function drawEmployeeRecords(page, applicationID, prisma, font, boldFont, 
     // Optional horizontal line below table
     page.drawLine({
         start: { x: startX, y: currentY + 5 },
-        end: { x: startX + 550, y: currentY + 5 },
+        end: { x: startX + 515, y: currentY + 5 },
         thickness: 0.5,
         color: rgb(0, 0, 0),
     });
@@ -1189,7 +1189,7 @@ async function drawExperienceDescription(page, applicationID, prisma, mapping, f
     // Optional horizontal line below table
     page.drawLine({
         start: { x: x, y: currentY + 5 },
-        end: { x: x + 550, y: currentY + 5 },
+        end: { x: x + 515, y: currentY + 5 },
         thickness: 0.5,
         color: rgb(0, 0, 0),
     });
@@ -1252,11 +1252,72 @@ async function drawResearchPublications(page, applicationID, prisma, mapping, fo
     // Optional horizontal line below table
     page.drawLine({
         start: { x: x, y: currentY + 5 },
-        end: { x: x + 550, y: currentY + 5 },
+        end: { x: x + 515, y: currentY + 5 },
         thickness: 0.5,
         color: rgb(0, 0, 0),
     });
-    
+
+    return currentY;
+}
+
+// drawNonRelatedReferees
+async function drawNonRelatedReferees(page, applicationID, prisma, mapping, font, boldFont) {
+    if (!mapping?.nonRelatedReferees) return;
+
+    const cfg = mapping.nonRelatedReferees;
+    let currentY = cfg.startY || 720;
+
+    // Fetch referees
+    const referees = await prisma.applicationreferences.findMany({
+        where: { ApplicationID: applicationID },
+        select: { Name: true, Designation: true, Address: true }
+    });
+
+    if (!referees || referees.length === 0) return currentY;
+
+    // Section title
+    page.drawText("Non-Related Referees", {
+        x: cfg.startX,
+        y: currentY,
+        size: 12,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+    });
+
+    currentY -= cfg.fontSize + 8;
+
+    for (const ref of referees) {
+        const fields = [
+            { label: "Name", value: ref.Name },
+            { label: "Designation", value: ref.Designation },
+            { label: "Address", value: ref.Address }
+        ];
+
+        for (const f of fields) {
+            const line = `${f.label}: ${f.value || ""}`;
+            page.drawText(line, {
+                x: cfg.columns[f.label],
+                y: currentY,
+                size: cfg.fontSize,
+                font,
+                color: rgb(0, 0, 0),
+                maxWidth: cfg.maxWidth,
+                lineHeight: cfg.lineHeight
+            });
+            currentY -= cfg.lineHeight;
+        }
+
+        currentY -= cfg.spacing; // spacing between referees
+    }
+
+    // Optional horizontal line below table
+    page.drawLine({
+        start: { x: cfg.startX, y: currentY + 5 },
+        end: { x: cfg.startX + 515, y: currentY + 5 },
+        thickness: 0.5,
+        color: rgb(0, 0, 0),
+    });
+
     return currentY;
 }
 
@@ -1359,6 +1420,10 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
 
     // 1️⃣5️⃣ Draw Research Publications on page2
     currentY = await drawResearchPublications(page3, applicationID, prisma, mapping, font, boldFont);
+
+    // 1️⃣6️⃣ Draw Non-Related Referees on page2
+    currentY = await drawNonRelatedReferees(page3, applicationID, prisma, mapping, font, boldFont);
+
 
 
     // 1️⃣5️⃣ Draw remaining text areas on page2
