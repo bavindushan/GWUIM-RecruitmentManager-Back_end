@@ -1067,7 +1067,7 @@ async function drawEmployeeRecords(page, applicationID, prisma, font, boldFont, 
             mapping.EmploymentRecords.columns.FromDate,
             mapping.EmploymentRecords.columns.ToDate,
             mapping.EmploymentRecords.columns.LastSalary
-            ]
+        ]
         : [0, 150, 350, 410, 480]; // default positions
 
     const headers = ["Post Held", "Institution", "From Date", "To Date", "Last Salary"];
@@ -1127,6 +1127,69 @@ async function drawEmployeeRecords(page, applicationID, prisma, font, boldFont, 
     page.drawLine({
         start: { x: startX, y: currentY + 5 },
         end: { x: startX + 550, y: currentY + 5 },
+        thickness: 0.5,
+        color: rgb(0, 0, 0),
+    });
+
+    return currentY;
+}
+
+// drawExperienceDescription
+async function drawExperienceDescription(page, applicationID, prisma, mapping, font, boldFont) {
+    if (!mapping?.experienceDescription) return;
+
+    const { x, y, fontSize, maxWidth, lineHeight } = mapping.experienceDescription;
+
+    // Fetch experience details from DB
+    const experience = await prisma.experiencedetails.findMany({
+        where: { ApplicationID: applicationID },
+        select: { Description: true }
+    });
+
+    if (!experience || experience.length === 0) {
+        console.log("No experience details found for this application.");
+        return y;
+    }
+
+    let currentY = y;
+
+    // Section title
+    const titleFontSize = fontSize || 12;
+    page.drawText("Experience Description", {
+        x,
+        y: currentY,
+        size: titleFontSize,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+    });
+
+    currentY -= titleFontSize + 8; // padding below title
+
+    // Draw each experience description
+    for (const exp of experience) {
+        if (exp.Description) {
+            // Split text into lines if maxWidth is provided
+            const textLines = exp.Description.match(/(.|[\r\n]){1,100}/g) || [exp.Description];
+            for (const line of textLines) {
+                page.drawText(line, {
+                    x,
+                    y: currentY,
+                    size: fontSize || 10,
+                    font,
+                    color: rgb(0, 0, 0),
+                    maxWidth: maxWidth || 500,
+                    lineHeight: lineHeight || 12
+                });
+                currentY -= lineHeight || 12;
+            }
+            currentY -= 8; // spacing between experiences if multiple
+        }
+    }
+
+    // Optional horizontal line below table
+    page.drawLine({
+        start: { x: x, y: currentY + 5 },
+        end: { x: x + 550, y: currentY + 5 },
         thickness: 0.5,
         color: rgb(0, 0, 0),
     });
@@ -1227,6 +1290,10 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
 
     // 1️⃣4️⃣ Draw Employment Records table on page3
     currentY = await drawEmployeeRecords(page3, applicationID, prisma, font, boldFont, mapping);
+
+    // 1️⃣3️⃣ Draw Experience Description on page2
+    currentY = await drawExperienceDescription(page3, applicationID, prisma, mapping, font, boldFont);
+
 
 
     // 1️⃣5️⃣ Draw remaining text areas on page2
