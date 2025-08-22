@@ -2,6 +2,24 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// Submit Secondary Educations
+exports.submitSecondaryEducations = catchAsync(async (req, res, next) => {
+    const userId = req.user?.id; // Logged-in user
+    const { applicationId, secondaryEducations } = req.body;
+
+    if (!applicationId || !Array.isArray(secondaryEducations) || secondaryEducations.length === 0) {
+        throw new BadRequestError('Application ID and a non-empty secondaryEducations array are required.');
+    }
+
+    const result = await applicationService.submitSecondaryEducations(applicationId, secondaryEducations);
+
+    res.status(201).json({
+        status: 'success',
+        message: 'Secondary education records submitted successfully.',
+        data: result,
+    });
+});
+
 // Add First Degree Subjects
 exports.addFirstDegreeSubjects = catchAsync(async (req, res, next) => {
     const { universityEducationId, subjects } = req.body;

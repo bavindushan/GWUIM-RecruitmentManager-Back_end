@@ -4,6 +4,55 @@ const authMiddleware = require('../middleware/authMiddleware');
 const asyncHandler = require('express-async-handler');
 const applicationController = require('../controllers/applicationController.controller');
 
+/**
+ * @swagger
+ * /api/applications/secondary-educations:
+ *   post:
+ *     summary: Submit secondary education records for an application
+ *     description: Allows a logged-in user to submit one or more secondary education records under a specific application.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               applicationId:
+ *                 type: integer
+ *                 example: 1
+ *               secondaryEducations:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     School:
+ *                       type: string
+ *                       example: "Royal College, Colombo"
+ *                     FromYear:
+ *                       type: integer
+ *                       example: 2010
+ *                     ToYear:
+ *                       type: integer
+ *                       example: 2016
+ *                     ExaminationPassed:
+ *                       type: string
+ *                       example: "GCE O/L"
+ *                     PassedYear:
+ *                       type: integer
+ *                       example: 2016
+ *     responses:
+ *       201:
+ *         description: Secondary education records submitted successfully
+ *       400:
+ *         description: Bad request - missing or invalid fields
+ *       401:
+ *         description: Unauthorized - user not logged in
+ */
+router.post( '/secondary-educations', authMiddleware, asyncHandler(applicationController.submitSecondaryEducations));
 
 /**
  * @swagger
