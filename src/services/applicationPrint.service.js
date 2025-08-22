@@ -501,6 +501,7 @@ async function drawAcademicCommonSections(templateDoc, page, mapping) {
     const pages = templateDoc.getPages();
     const page2 = pages[1] || templateDoc.addPage(); // still keep page2 for other content
     const page3 = pages[2] || templateDoc.addPage(); // new page for declaration + signature
+    const page4 = pages[3] || templateDoc.addPage();
 
     const font = await templateDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await templateDoc.embedFont(StandardFonts.HelveticaBold);
@@ -567,6 +568,11 @@ async function drawAcademicCommonSections(templateDoc, page, mapping) {
         font,
         color: rgb(0, 0, 0)
     });
+
+    // 6️⃣ Draw Public Sector Candidates Only (page4)
+    if (mapping.publicSectorCandidates) {
+        await drawPublicSectorCandidatesOnly(page4, mapping.publicSectorCandidates, font, boldFont);
+    }
 
     return { font, boldFont };
 }
@@ -1377,6 +1383,55 @@ async function drawAdditionalInformation(page, applicationID, mapping, font, bol
     });
 
     return currentY;
+}
+
+// draw Public Sector Candidates Only section
+async function drawPublicSectorCandidatesOnly(page, mapping, font, boldFont) {
+    const { x, y, fontSize, lineHeight, maxWidth, title } = mapping;
+
+    let currentY = y;
+
+    // Section Title
+    page.drawText(title || 'For Public Sector Candidates Only', {
+        x,
+        y: currentY,
+        size: fontSize + 2,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+    });
+
+    currentY -= lineHeight + 10;
+
+    // Section content (the paragraph and placeholders)
+    const contentLines = [
+        'Application for the post of..........................................................................................................................',
+        'submitted by Rev./ Prof./ Dr./Mr./ Mrs./ Ms...............................................................................................',
+        '..................................................................................................................................................................',
+        '..............................................................................................................................is forwarded here with.',
+        'If he/she is selected for the said post he/she can/cannot be released.',
+        '',
+        'Signature of the Head of the Institution : .................................',
+        '',
+        'Name : .........................................................................................................................',
+        'Designation : ...............................................................................................................',
+        'Date : .....................................................................',
+        '',
+        '',
+        'Official Seal : .................................'
+    ];
+
+    for (const line of contentLines) {
+        page.drawText(line, {
+            x,
+            y: currentY,
+            size: fontSize,
+            font,
+            color: rgb(0, 0, 0),
+            maxWidth,
+            lineHeight
+        });
+        currentY -= lineHeight;
+    }
 }
 
 // generateAcademicApplicationPDF

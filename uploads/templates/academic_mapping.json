@@ -139,5 +139,13 @@
         "dateY": 10,
         "signatureX": 400,
         "signatureY": 10
+    },
+    "publicSectorCandidates": {
+        "x": 50,
+        "y": 750,
+        "fontSize": 11,
+        "lineHeight": 20,
+        "maxWidth": 500,
+        "title": "For Public Sector Candidates Only"
     }
 }
