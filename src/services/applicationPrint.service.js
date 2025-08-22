@@ -1583,7 +1583,3 @@ exports.generateApplicationPDF = async (applicationID) => {
         return await generateNonAcademicApplicationPDF(applicationID, application);
     }
 };
-
-
-
-

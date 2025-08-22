@@ -2,6 +2,86 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { BadRequestError, ValidationError, NotFoundError } = require('../utils/AppError');
 
+// Submit Secondary Educations
+exports.submitSecondaryEducations = async (applicationId, secondaryEducations) => {
+    // Validate input
+    if (!applicationId || !Array.isArray(secondaryEducations) || secondaryEducations.length === 0) {
+        throw new BadRequestError('Application ID and a non-empty secondaryEducations array are required.');
+    }
+
+    // Verify the application exists
+    const application = await prisma.application.findUnique({
+        where: { ApplicationID: applicationId }
+    });
+
+    if (!application) {
+        throw new NotFoundError('Application not found for the given ApplicationID.');
+    }
+
+    // Save each secondary education record
+    const createdRecords = [];
+    for (const secEd of secondaryEducations) {
+        const { School, FromYear, ToYear, ExaminationPassed, PassedYear } = secEd;
+
+        if (!School || !FromYear || !ToYear || !ExaminationPassed || !PassedYear) {
+            throw new BadRequestError('All fields (School, FromYear, ToYear, ExaminationPassed, PassedYear) are required for each secondary education record.');
+        }
+
+        const record = await prisma.secondaryeducation.create({
+            data: {
+                ApplicationID: applicationId,
+                School,
+                FromYear,
+                ToYear,
+                ExaminationPassed,
+                PassedYear
+            }
+        });
+
+        createdRecords.push(record);
+    }
+
+    return createdRecords;
+};
+
+// Add first degree subjects
+exports.addFirstDegreeSubjects = async (universityEducationId, subjects) => {
+    // Validate input
+    if (!universityEducationId || !Array.isArray(subjects) || subjects.length === 0) {
+        throw new BadRequestError('UniversityEducationID and at least one subject are required.');
+    }
+
+    // Verify the university education record exists
+    const uniEdu = await prisma.universityeducations.findUnique({
+        where: { UE_ID: universityEducationId },
+    });
+
+    if (!uniEdu) {
+        throw new NotFoundError('University education record not found for the given ID.');
+    }
+
+    // Insert subjects
+    const createdSubjects = [];
+    for (const subjectName of subjects) {
+        if (!subjectName || subjectName.trim() === '') continue;
+
+        const newSubject = await prisma.first_degree_subjects.create({
+            data: {
+                UniversityEducationID: universityEducationId,
+                MainSubject: subjectName.trim(),
+            },
+        });
+
+        createdSubjects.push(newSubject);
+    }
+
+    if (createdSubjects.length === 0) {
+        throw new BadRequestError('No valid subjects were provided to add.');
+    }
+
+    return createdSubjects;
+};
+
 // Get application status by user ID and job ID
 exports.getApplicationStatus = async (userId, jobId) => {
     const application = await prisma.application.findFirst({
@@ -392,8 +472,7 @@ exports.submitGceAlResults = async (userId, jobId, alResults) => {
 
     return { message: `${created.count} A/L results submitted successfully.` };
 };
-
-
+// Submit General Details for an application
 exports.submitGeneralDetails = async (userId, jobId, generalDetails) => {
     // 1. Validate required data
     if (!userId || !jobId) {

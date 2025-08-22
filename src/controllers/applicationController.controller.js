@@ -2,6 +2,23 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// Add First Degree Subjects
+exports.addFirstDegreeSubjects = catchAsync(async (req, res, next) => {
+    const { universityEducationId, subjects } = req.body;
+
+    if (!universityEducationId || !Array.isArray(subjects) || subjects.length === 0) {
+        throw new BadRequestError('UniversityEducationID and a non-empty subjects array are required.');
+    }
+
+    const result = await applicationService.addFirstDegreeSubjects(universityEducationId, subjects);
+
+    res.status(201).json({
+        status: 'success',
+        message: 'First degree subjects added successfully.',
+        data: result,
+    });
+});
+
 // Get application status by jobId
 exports.getApplicationStatus = catchAsync(async (req, res, next) => {
     const userId = req.user?.id;

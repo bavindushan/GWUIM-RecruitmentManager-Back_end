@@ -7,6 +7,41 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/first-degree-subjects:
+ *   post:
+ *     summary: Add first degree subjects for a university education record
+ *     description: Allows a logged-in user to add one or more subjects under a specific university education record.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               universityEducationId:
+ *                 type: integer
+ *                 example: 1
+ *               subjects:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   example: "Data Structures"
+ *     responses:
+ *       201:
+ *         description: First degree subjects added successfully
+ *       400:
+ *         description: Bad request - missing or invalid fields
+ *       401:
+ *         description: Unauthorized - user not logged in
+ */
+router.post( '/first-degree-subjects', authMiddleware, asyncHandler(applicationController.addFirstDegreeSubjects));
+
+/**
+ * @swagger
  * /api/applications/status/{jobId}:
  *   get:
  *     summary: Get application status for a specific job
