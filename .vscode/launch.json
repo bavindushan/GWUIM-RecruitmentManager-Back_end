@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "node",
+            "name": "debug applicationPrint.service.js",
+            "request": "launch",
+            "args": [],
+            "program": "c:\\Users\\Bavindu Shan\\Documents\\GWUIM-UGC\\Recrurent Manager\\Back-end\\GWUIM-RecruitmentManager-Back_end\\src\\services\\applicationPrint.service.js"
+        }
+    ]
+}

@@ -90,16 +90,16 @@
             "fontSize": 11
         },
         "EmploymentRecords": {
-        "startX": 50,
-        "startY": 120,
-        "rowHeight": 18,
-        "columns": {
-            "PostHeld": 0,
-            "Institution": 100,
-            "FromDate": 250,
-            "ToDate": 350,
-            "LastSalary": 450
-        }
+            "startX": 50,
+            "startY": 800,
+            "rowHeight": 18,
+            "columns": {
+                "PostHeld": 0,
+                "Institution": 100,
+                "FromDate": 250,
+                "ToDate": 350,
+                "LastSalary": 450
+            }
         }
     },
 

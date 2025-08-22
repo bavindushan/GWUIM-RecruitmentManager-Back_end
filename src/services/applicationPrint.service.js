@@ -499,7 +499,8 @@ async function generateNonAcademicApplicationPDF(applicationID, applicationData)
 // drawAcademicCommonSections
 async function drawAcademicCommonSections(templateDoc, page, mapping) {
     const pages = templateDoc.getPages();
-    const page2 = pages[1] || templateDoc.addPage();
+    const page2 = pages[1] || templateDoc.addPage(); // still keep page2 for other content
+    const page3 = pages[2] || templateDoc.addPage(); // new page for declaration + signature
 
     const font = await templateDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await templateDoc.embedFont(StandardFonts.HelveticaBold);
@@ -537,9 +538,9 @@ async function drawAcademicCommonSections(templateDoc, page, mapping) {
         color: rgb(0, 0, 0)
     });
 
-    // 4️⃣ Declaration (page 2)
+    // 4️⃣ Declaration (now on page 3)
     if (mapping.declaration?.text) {
-        page2.drawText(mapping.declaration.text, {
+        page3.drawText(mapping.declaration.text, {
             x: mapping.declaration.textX,
             y: mapping.declaration.textY,
             size: mapping.declaration.fontSize || 10,
@@ -550,8 +551,8 @@ async function drawAcademicCommonSections(templateDoc, page, mapping) {
         });
     }
 
-    // 5️⃣ Signature placeholders (page 2)
-    page2.drawText('Date:', {
+    // 5️⃣ Signature placeholders (now on page 3)
+    page3.drawText('Date:', {
         x: mapping.signature.dateX,
         y: mapping.signature.dateY,
         size: mapping.signature.fontSize || 10,
@@ -559,7 +560,7 @@ async function drawAcademicCommonSections(templateDoc, page, mapping) {
         color: rgb(0, 0, 0)
     });
 
-    page2.drawText('Signature:', {
+    page3.drawText('Signature:', {
         x: mapping.signature.signatureX,
         y: mapping.signature.signatureY,
         size: mapping.signature.fontSize || 10,
@@ -1029,8 +1030,104 @@ async function drawLanguagesProficiency(page, applicationID, prisma, mapping, fo
     return currentY;
 }
 
+// drawEmployeeRecords - rewritten for page3
+async function drawEmployeeRecords(page, applicationID, prisma, font, boldFont) {
+    console.log("drawEmployeeRecords method working!!");
+    console.log("ApplicationID passed to drawEmployeeRecords:", applicationID);
+
+    // Fetch employment records for the given applicationID
+    const records = await prisma.employmenthistories.findMany({
+        where: { ApplicationID: Number(applicationID) },
+        select: {
+            PostHeld: true,
+            Institution: true,
+            FromDate: true,
+            ToDate: true,
+            LastSalary: true
+        }
+    });
+
+    console.log("Employment Records fetched:", records);
+
+    if (!records || records.length === 0) {
+        console.log("No employment records found for this application.");
+        return;
+    }
+
+    // --- Table layout ---
+    const startX = 50;           // left margin
+    let currentY = 720;          // starting Y coordinate from top
+    const rowHeight = 20;        // space between rows
+
+    // Column X offsets relative to startX
+    const colPositions = [0, 150, 350, 420, 490]; 
+    const headers = ["Post Held", "Institution", "From Date", "To Date", "Last Salary"];
+
+    // Section title
+    page.drawText("Employment Records", {
+        x: startX,
+        y: currentY,
+        size: 14,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+    });
+
+    currentY -= rowHeight;
+
+    // Draw table headers
+    for (let i = 0; i < headers.length; i++) {
+        page.drawText(headers[i], {
+            x: startX + colPositions[i],
+            y: currentY,
+            size: 12,
+            font: boldFont,
+            color: rgb(0, 0, 0)
+        });
+    }
+
+    currentY -= rowHeight;
+
+    // Helper functions
+    const formatDate = (date) => date ? new Date(date).toLocaleDateString() : "";
+    const formatSalary = (salary) => salary != null ? salary.toLocaleString(undefined, { minimumFractionDigits: 2 }) : "";
+
+    // Draw each record row
+    for (const rec of records) {
+        const rowData = [
+            rec.PostHeld || "",
+            rec.Institution || "",
+            formatDate(rec.FromDate),
+            formatDate(rec.ToDate),
+            formatSalary(rec.LastSalary)
+        ];
+
+        for (let i = 0; i < rowData.length; i++) {
+            page.drawText(rowData[i], {
+                x: startX + colPositions[i],
+                y: currentY,
+                size: 12,
+                font,
+                color: rgb(0, 0, 0)
+            });
+        }
+
+        currentY -= rowHeight;
+    }
+
+    // Optional horizontal line below table
+    page.drawLine({
+        start: { x: startX, y: currentY + 5 },
+        end: { x: startX + 550, y: currentY + 5 },
+        thickness: 0.5,
+        color: rgb(0, 0, 0),
+    });
+
+    return currentY;
+}
+
 // generateAcademicApplicationPDF
 exports.generateAcademicApplicationPDF = async (applicationID) => {
+
     // 1️⃣ Fetch application data
     const application = await fetchApplicationData(applicationID);
 
@@ -1041,8 +1138,9 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
     const pages = templateDoc.getPages();
     const page1 = pages[0];
     const page2 = pages[1] || templateDoc.addPage();
+    const page3 = pages[2] || templateDoc.addPage(); // ✅ New page 3
 
-    // 4️⃣ Draw common sections (logo, titles, declaration, signature placeholders)
+    // 4️⃣ Draw common sections (logo, titles) only on page1
     const { font, boldFont } = await drawAcademicCommonSections(templateDoc, page1, mapping);
 
     // 5️⃣ Draw top-right identifiers on page1
@@ -1104,7 +1202,7 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
 
     // 🔟 Draw Professional Qualifications on page2
     currentY = await drawProfessionalQualifications(
-        page2, // <-- use page2 here
+        page2,
         application,
         mapping,
         font,
@@ -1118,8 +1216,13 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
     // 1️⃣2️⃣ Draw Languages Proficiency on page2
     currentY = await drawLanguagesProficiency(page2, applicationID, prisma, mapping, font, boldFont);
 
+    // 1️⃣4️⃣ Draw Employment Records table on page3
+    currentY = await drawEmployeeRecords(page3, applicationID, prisma, mapping, font, boldFont);
 
-    // 🔟 Draw remaining text areas on page2
+    page3.drawText("TEST PRINT", { x: 50, y: 750, size: 12, font: boldFont, color: rgb(0, 0, 0) });
+
+
+    // 1️⃣5️⃣ Draw remaining text areas on page2
     const textAreas = [
         'experienceDescription',
         'researchPublications',
@@ -1142,10 +1245,9 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
         }
     });
 
-    // 1️⃣1️⃣ Return PDF bytes
+    // 1️⃣6️⃣ Return PDF bytes
     return await templateDoc.save();
 };
-
 
 // Main function to generate PDF
 exports.generateApplicationPDF = async (applicationID) => {
