@@ -1197,6 +1197,69 @@ async function drawExperienceDescription(page, applicationID, prisma, mapping, f
     return currentY;
 }
 
+// drawResearchPublications
+async function drawResearchPublications(page, applicationID, prisma, mapping, font, boldFont) {
+    if (!mapping?.researchPublications) return;
+
+    const { x, y, fontSize, maxWidth, lineHeight } = mapping.researchPublications;
+
+    // Fetch research and publications from DB
+    const publications = await prisma.researchandpublications.findMany({
+        where: { ApplicationID: applicationID },
+        select: { Description: true }
+    });
+
+    let currentY = y;
+
+    // Section title
+    const titleFontSize = fontSize || 12;
+    page.drawText("Details of research and publications (Attached Separately)", {
+        x,
+        y: currentY,
+        size: titleFontSize,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+    });
+
+    currentY -= titleFontSize + 8; // padding below title
+
+    if (!publications || publications.length === 0) {
+        console.log("No research publications found for this application.");
+        return currentY;
+    }
+
+    // Draw each publication description
+    for (const pub of publications) {
+        if (pub.Description) {
+            // Auto-split long text into multiple lines if needed
+            const textLines = pub.Description.match(/(.|[\r\n]){1,100}/g) || [pub.Description];
+            for (const line of textLines) {
+                page.drawText(line, {
+                    x,
+                    y: currentY,
+                    size: fontSize || 10,
+                    font,
+                    color: rgb(0, 0, 0),
+                    maxWidth: maxWidth || 500,
+                    lineHeight: lineHeight || 12
+                });
+                currentY -= lineHeight || 12;
+            }
+            currentY -= 8; // spacing between multiple publications
+        }
+    }
+
+    // Optional horizontal line below table
+    page.drawLine({
+        start: { x: x, y: currentY + 5 },
+        end: { x: x + 550, y: currentY + 5 },
+        thickness: 0.5,
+        color: rgb(0, 0, 0),
+    });
+    
+    return currentY;
+}
+
 // generateAcademicApplicationPDF
 exports.generateAcademicApplicationPDF = async (applicationID) => {
 
@@ -1294,6 +1357,8 @@ exports.generateAcademicApplicationPDF = async (applicationID) => {
     // 1️⃣3️⃣ Draw Experience Description on page2
     currentY = await drawExperienceDescription(page3, applicationID, prisma, mapping, font, boldFont);
 
+    // 1️⃣5️⃣ Draw Research Publications on page2
+    currentY = await drawResearchPublications(page3, applicationID, prisma, mapping, font, boldFont);
 
 
     // 1️⃣5️⃣ Draw remaining text areas on page2

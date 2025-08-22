@@ -104,7 +104,7 @@
     },
 
     "experienceDescription": { "x": 50, "y": 650, "fontSize": 11 },
-    "researchPublications": { "x": 50, "y": 60, "fontSize": 11 },
+    "researchPublications": { "x": 50, "y": 520, "fontSize": 11 },
     "specialQualifications": { "x": 50, "y": 500, "fontSize": 11 },
     "nonRelatedReferees": { "x": 50, "y": 20, "fontSize": 11 },
 
