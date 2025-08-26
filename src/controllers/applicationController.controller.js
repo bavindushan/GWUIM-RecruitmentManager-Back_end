@@ -2,6 +2,24 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// Add Additional Info to an application
+exports.addAdditionalInfo = catchAsync(async (req, res, next) => {
+    const applicationId = req.body.applicationId;
+    const content = req.body.content;
+
+    if (!applicationId || !content) {
+        throw new BadRequestError("Application ID and content are required.");
+    }
+
+    const result = await applicationService.saveAdditionalInfo(applicationId, content);
+
+    res.status(201).json({
+        status: "success",
+        message: "Additional info saved successfully.",
+        data: result
+    });
+});
+
 // Submit Secondary Educations
 exports.submitSecondaryEducations = catchAsync(async (req, res, next) => {
     const userId = req.user?.id; // Logged-in user

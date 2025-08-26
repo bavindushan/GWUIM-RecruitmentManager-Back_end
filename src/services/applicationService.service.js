@@ -2,6 +2,43 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { BadRequestError, ValidationError, NotFoundError } = require('../utils/AppError');
 
+// Save Additional Information for an application
+exports.saveAdditionalInfo = async (applicationId, content) => {
+    if (!applicationId || !content) {
+        throw new BadRequestError("Application ID and content are required.");
+    }
+
+    // Verify application exists
+    const application = await prisma.application.findUnique({
+        where: { ApplicationID: applicationId },
+    });
+
+    if (!application) {
+        throw new NotFoundError("Application not found.");
+    }
+
+    // Create or update additional info
+    const existing = await prisma.additionalinfo.findFirst({
+        where: { ApplicationID: applicationId }
+    });
+
+    if (existing) {
+        // Update
+        const updated = await prisma.additionalinfo.update({
+            where: { InfoID: existing.InfoID },
+            data: { Content: content }
+        });
+        return updated;
+    } else {
+        // Create
+        const created = await prisma.additionalinfo.create({
+            data: { ApplicationID: applicationId, Content: content }
+        });
+        return created;
+    }
+
+};
+
 // Submit Secondary Educations
 exports.submitSecondaryEducations = async (applicationId, secondaryEducations) => {
     // Validate input

@@ -6,6 +6,35 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/additional-info:
+ *   post:
+ *     summary: Add or update additional information for an application
+ *     tags: [Applications]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               applicationId:
+ *                 type: integer
+ *                 example: 1
+ *               content:
+ *                 type: string
+ *                 example: "I have several professional certifications and volunteer experience."
+ *     responses:
+ *       201:
+ *         description: Additional information saved successfully
+ *       400:
+ *         description: Bad request - missing required fields
+ *       404:
+ *         description: Application not found
+ */
+router.post('/additional-info', authMiddleware, asyncHandler(applicationController.addAdditionalInfo));
+
+/**
+ * @swagger
  * /api/applications/secondary-educations:
  *   post:
  *     summary: Submit secondary education records for an application
