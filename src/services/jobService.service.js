@@ -1,6 +1,22 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// Get all applications by user ID
+exports.getApplicationsByUserId = async (userId) => {
+    const applications = await prisma.application.findMany({
+        where: { UserID: parseInt(userId) },
+        include: {
+            jobvacancy: true, // include job details
+            additionalinfo: true, // include additional info
+            applicationgeneraldetails: true, // optional
+            applicationattachments: true // optional
+        },
+        orderBy: { SubmissionDate: 'desc' },
+    });
+
+    return applications;
+};
+
 exports.getAllJobs = async () => {
     const jobs = await prisma.jobvacancy.findMany({
         where: {

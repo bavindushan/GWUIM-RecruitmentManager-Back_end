@@ -2,6 +2,22 @@ const jobService = require('../services/jobService.service');
 const catchAsync = require('../utils/catchAsync');
 const {NotFoundError} = require('../utils/AppError');
 
+// Get all applications by user ID
+exports.getApplicationsByUserId = catchAsync(async (req, res, next) => {
+    const { userId } = req.params;
+
+    const applications = await jobService.getApplicationsByUserId(userId);
+
+    if (!applications || applications.length === 0) {
+        return next(new NotFoundError('No applications found for this user', 404));
+    }
+
+    res.status(200).json({
+        status: 'success',
+        results: applications.length,
+        data: applications,
+    });
+});
 
 // Get all jobs
 exports.getAllJobs = catchAsync(async (req, res, next) => {

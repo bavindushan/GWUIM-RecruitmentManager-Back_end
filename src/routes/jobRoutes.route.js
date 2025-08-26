@@ -168,4 +168,41 @@ router.get('/filter', authMiddleware, asyncHandler(jobController.getFilteredJobs
  */
 router.get('/:id', authMiddleware, asyncHandler(jobController.getJobById));
 
+/**
+ * @swagger
+ * /api/jobs/user-applications/{userId}:
+ *   get:
+ *     summary: Get all applications submitted by a specific user
+ *     tags: [Job]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The user ID
+ *     responses:
+ *       200:
+ *         description: Applications retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 results:
+ *                   type: integer
+ *                   example: 2
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       404:
+ *         description: No applications found for the given user
+ */
+router.get('/user-applications/:userId', authMiddleware, asyncHandler(jobController.getApplicationsByUserId));
+
+
 module.exports = router;
