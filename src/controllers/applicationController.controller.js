@@ -2,6 +2,19 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// Delete all related Academic records of an application
+exports.deleteAllRelatedAC = catchAsync(async (req, res, next) => {
+    const { applicationId } = req.params;
+
+    const result = await applicationService.deleteAllRelatedAC(applicationId);
+
+    res.status(200).json({
+        status: 'success',
+        message: "All Academic records deleted successfully.",
+        data: result,
+    });
+});
+
 // Delete all related Non Academic records of an application
 exports.deleteAllRelatedNA = catchAsync(async (req, res, next) => {
     const { applicationId } = req.params;
@@ -10,7 +23,7 @@ exports.deleteAllRelatedNA = catchAsync(async (req, res, next) => {
 
     res.status(200).json({
         status: 'success',
-        message: "Non Academic records deleted successfully.",
+        message: "All Non Academic records deleted successfully.",
         data: result,
     });
 });
