@@ -6,6 +6,31 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/delete-all-na/{applicationId}:
+ *   delete:
+ *     summary: Delete all non-academic related data for an application
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: applicationId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The application ID
+ *     responses:
+ *       200:
+ *         description: All related NA data deleted successfully
+ *       400:
+ *         description: Bad request - missing or invalid application ID
+ *       404:
+ *         description: Application not found
+ */
+router.delete('/delete-all-na/:applicationId', authMiddleware, asyncHandler(applicationController.deleteAllRelatedNA));
+
+/**
+ * @swagger
  * /api/applications/additional-info:
  *   post:
  *     summary: Add or update additional information for an application

@@ -1,6 +1,42 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { BadRequestError, ValidationError, NotFoundError } = require('../utils/AppError');
+const fs = require('fs');
+const path = require('path');
+
+// Delete all non-academic related data by ApplicationID
+exports.deleteAllRelatedNA = async (applicationId) => {
+    if (!applicationId) throw new BadRequestError('Application ID is required.');
+
+    // Verify application exists
+    const application = await prisma.application.findUnique({
+        where: { ApplicationID: applicationId },
+        include: { applicationattachments: true } // Include attachments to delete files
+    });
+
+    if (!application) throw new NotFoundError('Application not found.');
+
+    // 1️⃣ Delete files from disk (if any attachments)
+    if (application.applicationattachments.length > 0) {
+        for (const attachment of application.applicationattachments) {
+            const filePath = path.join(__dirname, '..', '..', 'uploads', 'resumes', attachment.filename);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+    }
+
+    // 2️⃣ Delete all related NA tables
+    await prisma.applicationattachments.deleteMany({ where: { ApplicationID: applicationId } });
+    await prisma.experiencedetails.deleteMany({ where: { ApplicationID: applicationId } });
+    await prisma.professionalqualifications.deleteMany({ where: { ApplicationID: applicationId } });
+    await prisma.specialqualifications.deleteMany({ where: { ApplicationID: applicationId } });
+    await prisma.gce_al_results.deleteMany({ where: { ApplicationID: applicationId } });
+    await prisma.gce_ol_results.deleteMany({ where: { ApplicationID: applicationId } });
+    await prisma.universityeducations.deleteMany({ where: { ApplicationID: applicationId } });
+
+    return { message: 'All related non-academic data deleted successfully.' };
+};
 
 // Save Additional Information for an application
 exports.saveAdditionalInfo = async (applicationId, content) => {
