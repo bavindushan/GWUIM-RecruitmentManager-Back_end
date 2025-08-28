@@ -266,6 +266,7 @@ model user {
   CreatedAt     DateTime?           @default(now()) @db.DateTime(0)
   UpdatedAt     DateTime?           @default(now()) @db.DateTime(0)
   application   application[]
+  otp           otp[]
 }
 
 model physicalattributes_na {
@@ -301,6 +302,18 @@ model first_degree_subjects {
   universityeducations  universityeducations @relation(fields: [UniversityEducationID], references: [UE_ID], onDelete: Cascade, onUpdate: NoAction, map: "first_degree_subjects_ibfk_1")
 
   @@index([UniversityEducationID], map: "UniversityEducationID")
+}
+
+model otp {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  otpCode   String   @db.VarChar(10)
+  purpose   String   @db.VarChar(50)
+  expiresAt DateTime @db.DateTime(0)
+  createdAt DateTime @default(now()) @db.DateTime(0)
+  user      user     @relation(fields: [userId], references: [UserID], onDelete: Cascade, onUpdate: NoAction, map: "fk_user")
+
+  @@index([userId], map: "userId")
 }
 
 enum applicationtemplate_Type {

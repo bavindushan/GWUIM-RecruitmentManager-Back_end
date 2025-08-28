@@ -8,6 +8,7 @@ const apllicationTemplateRoutes = require('./applicationTemplateRoutes.route');
 const uploadRoutes = require('./uploadRoutes.route');
 const adminRoutes = require('./AdminRoutes.route')
 const applicationPrintRoutes = require('./applicationPrint.route');
+const otpRoutes = require('./otpRoutes.route');
 
 router.use('/user', userRoutes);
 router.use('/jobs', jobRoutes);
@@ -17,5 +18,6 @@ router.use('/application-templates', apllicationTemplateRoutes);
 router.use('/uploads', uploadRoutes);
 router.use('/admin', adminRoutes);
 router.use('/applications-print', applicationPrintRoutes);
+router.use('/otp', otpRoutes);
 
 module.exports = router;
