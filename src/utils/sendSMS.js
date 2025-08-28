@@ -20,4 +20,11 @@
 //   }
 // }
 
+// Note : for the Dialog API integration
+
+// They will provide:
+// Endpoint URL
+// App ID
+// App Secret
+
 // module.exports = sendSMS;

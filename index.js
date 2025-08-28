@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const setupSwaggerDocs = require('./src/config/swagger');
 const Router = require('./src/routes/route');
 const errorMiddleware = require('./src/middleware/errorMiddleware');
+const { scheduleOtpCleanup } = require('./src/jobs/deleteOtp.cron');
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ app.use(express.json());
 app.use('/api', Router);
 
 setupSwaggerDocs(app);
+
+//scheduleOtpCleanup(); // Start OTP cleanup job
 
 app.use(errorMiddleware);
 
