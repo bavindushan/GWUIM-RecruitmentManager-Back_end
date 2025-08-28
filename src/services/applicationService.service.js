@@ -4,6 +4,23 @@ const { BadRequestError, ValidationError, NotFoundError } = require('../utils/Ap
 const fs = require('fs');
 const path = require('path');
 
+// Check if applicant already applied for a job
+exports.checkAlreadyApplied = async (userId, jobId) => {
+    if (!userId || !jobId) {
+        throw new BadRequestError("User ID and Job ID are required.");
+    }
+
+    // Check application in DB
+    const existingApplication = await prisma.application.findFirst({
+        where: {
+            UserID: userId,
+            JobID: jobId
+        }
+    });
+
+    return { applied: !!existingApplication };
+};
+
 // Delete all academic related data by ApplicationID
 exports.deleteAllRelatedAC = async (applicationId) => {
     if (!applicationId) throw new BadRequestError('Application ID is required.');

@@ -2,6 +2,20 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// Check if already applied
+exports.checkAlreadyApplied = async (req, res, next) => {
+    try {
+        const userId = req.user.id; // from auth middleware
+        const { jobId } = req.query; // jobId as query param ?jobId=123
+
+        const result = await applicationService.checkAlreadyApplied(userId, parseInt(jobId));
+
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Delete all related Academic records of an application
 exports.deleteAllRelatedAC = catchAsync(async (req, res, next) => {
     const { applicationId } = req.params;

@@ -6,6 +6,33 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/check-applied:
+ *   get:
+ *     summary: Check if user already applied for a job
+ *     description: Returns true/false if the logged-in user already applied for the job.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Job ID to check
+ *     responses:
+ *       200:
+ *         description: "Returns a JSON object indicating if the user already applied (e.g., {\"applied\": true})."
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/check-applied', authMiddleware, asyncHandler(applicationController.checkAlreadyApplied));
+
+/**
+ * @swagger
  * /api/applications/delete-all-ac/{applicationId}:
  *   delete:
  *     summary: Delete all academic-related data for an application
