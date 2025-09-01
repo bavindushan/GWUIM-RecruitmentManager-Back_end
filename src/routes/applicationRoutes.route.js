@@ -6,6 +6,47 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/admin/applications-all:
+ *   get:
+ *     summary: Get all applications (admin view)
+ *     description: Fetch all applications to display in the admin table.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all applications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       ApplicationID:
+ *                         type: integer
+ *                       FullName:
+ *                         type: string
+ *                       Email:
+ *                         type: string
+ *                       Status:
+ *                         type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get('/applications-all', authMiddleware, asyncHandler(applicationController.getAllApplications));
+
+/**
+ * @swagger
  * /api/applications/check-applied:
  *   get:
  *     summary: Check if user already applied for a job

@@ -4,6 +4,34 @@ const { BadRequestError, ValidationError, NotFoundError } = require('../utils/Ap
 const fs = require('fs');
 const path = require('path');
 
+// Get all applications for admin table
+exports.getAllApplications = async () => {
+    const applications = await prisma.application.findMany({
+        select: {
+            ApplicationID: true,
+            Status: true,
+            SubmissionDate: true,
+            user: {                // fetch related user info
+                select: {
+                    FullName: true,
+                    Email: true
+                }
+            }
+        },
+        orderBy: {
+            SubmissionDate: 'desc'
+        }
+    });
+
+    // Format the response to match frontend expectation
+    return applications.map(app => ({
+        ApplicationID: app.ApplicationID,
+        FullName: app.user?.FullName || '',
+        Email: app.user?.Email || '',
+        Status: app.Status
+    }));
+};
+
 // Check if applicant already applied for a job
 exports.checkAlreadyApplied = async (userId, jobId) => {
     if (!userId || !jobId) {
