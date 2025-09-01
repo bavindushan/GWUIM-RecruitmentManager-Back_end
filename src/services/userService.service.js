@@ -125,7 +125,34 @@ const signInUser = async (email, password) => {
   };
 };
 
+const resetUserPassword = async (userId, newPassword) => {
+  // Validate input
+  if (!newPassword) {
+    throw new BadRequestError('New password is required');
+  }
+
+  // Fetch user
+  const user = await prisma.user.findUnique({ where: { UserID: userId } });
+  if (!user) {
+    throw new UnauthorizedError('User not found');
+  }
+
+  // Hash new password
+  const hashedPassword = await hashPassword(newPassword);
+
+  // Update password in DB
+  await prisma.user.update({
+    where: { UserID: userId },
+    data: { PasswordHash: hashedPassword },
+  });
+
+  return {
+    message: 'Password reset successfully',
+  };
+};
+
 module.exports = {
   registerUser,
   signInUser,
+  resetUserPassword,
 };

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const asyncHandler = require('express-async-handler');
+const authMiddleware = require('../middleware/authMiddleware');
 const userController = require('../controllers/userController.controller');
 
 /**
@@ -67,5 +68,37 @@ router.post('/register', asyncHandler(userController.registerUser));
  *         description: Invalid email or password
  */
 router.post('/sign-in', asyncHandler(userController.loginUser));
+
+/**
+ * @swagger
+ * /api/users/reset-password:
+ *   post:
+ *     summary: Reset password (Forgot Password)
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - newPassword
+ *             properties:
+ *               newPassword:
+ *                 type: string
+ *                 example: "NewSecurePassword123"
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: New password is required
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *       500:
+ *         description: Server error
+ */
+router.post('/reset-password', authMiddleware, asyncHandler(userController.resetPassword));
 
 module.exports = router;

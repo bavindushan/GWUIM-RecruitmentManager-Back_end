@@ -33,3 +33,20 @@ exports.loginUser = catchAsync(async (req, res, next) => {
     token,
   });
 });
+
+// Reset password (Forgot Password)
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  const { newPassword } = req.body;
+  const userId = req.user.id; // assuming user is verified via OTP and JWT
+
+  if (!newPassword) {
+    return next(new BadRequestError('New password is required'));
+  }
+
+  await userService.resetUserPassword(userId, newPassword);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Password reset successfully',
+  });
+});

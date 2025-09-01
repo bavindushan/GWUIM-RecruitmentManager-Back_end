@@ -56,7 +56,7 @@ async function verifyOTP(userId, otpCode, purpose) {
     }
 
     // OTP valid → delete after use
-    await prisma.oTP.delete({ where: { id: otpRecord.id } });
+    await prisma.otp.delete({ where: { id: otpRecord.id } });
 
     return true;
 }
