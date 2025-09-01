@@ -6,6 +6,40 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/admin/download-cv/{applicationId}:
+ *   get:
+ *     summary: Download applicant's CV file
+ *     description: Admin can download the CV uploaded by the applicant for a given application ID.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: applicationId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the application
+ *     responses:
+ *       200:
+ *         description: CV file downloaded successfully
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: Invalid Application ID
+ *       404:
+ *         description: CV not found
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/download-cv/:applicationId', authMiddleware, asyncHandler(applicationController.downloadCV));
+
+/**
+ * @swagger
  * /api/admin/change-application-status/{applicationId}:
  *   post:
  *     summary: Change the status of an application

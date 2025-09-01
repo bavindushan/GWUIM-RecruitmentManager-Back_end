@@ -2,6 +2,20 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// For cv downloads
+exports.downloadCV = async (req, res, next) => {
+    try {
+        const { applicationId } = req.params;
+
+        const cvPath = await applicationService.downloadCVByApplicationId(parseInt(applicationId));
+
+        // Send file
+        return res.download(cvPath, `CV_${applicationId}${path.extname(cvPath)}`);
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Change application status (admin)
 exports.changeApplicationStatus = catchAsync(async (req, res, next) => {
     const { applicationId } = req.params;

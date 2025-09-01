@@ -4,6 +4,35 @@ const { BadRequestError, ValidationError, NotFoundError } = require('../utils/Ap
 const fs = require('fs');
 const path = require('path');
 
+// Function to download CV by ApplicationID
+exports.downloadCVByApplicationId = async (applicationId) => {
+    if (!applicationId) {
+        throw new BadRequestError('Application ID is required');
+    }
+
+    // Fetch CV attachment
+    const attachment = await prisma.applicationattachments.findFirst({
+        where: {
+            ApplicationID: applicationId,
+            FileType: 'CV'
+        }
+    });
+
+    if (!attachment || !attachment.FilePath) {
+        throw new NotFoundError('CV not found for this application');
+    }
+
+    // Resolve full file path
+    const cvPath = path.resolve(attachment.FilePath);
+
+    // Check if file exists
+    if (!fs.existsSync(cvPath)) {
+        throw new NotFoundError('CV file does not exist on server');
+    }
+
+    return cvPath;
+};
+
 // Change application status (Admin)
 exports.changeApplicationStatus = async (applicationId, status, remarks) => {
     if (!applicationId || !status) {
