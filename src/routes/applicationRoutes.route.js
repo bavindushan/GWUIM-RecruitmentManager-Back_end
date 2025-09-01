@@ -6,6 +6,47 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/admin/change-application-status/{applicationId}:
+ *   post:
+ *     summary: Change the status of an application
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: applicationId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the application to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 example: "In_Reviewing"
+ *               Remarks:
+ *                 type: string
+ *                 example: ""
+ *     responses:
+ *       200:
+ *         description: Application status updated successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Application not found
+ *       401:
+ *         description: Unauthorized
+ */
+router.post( '/change-application-status/:applicationId', authMiddleware, asyncHandler(applicationController.changeApplicationStatus));
+
+/**
+ * @swagger
  * /api/admin/applications-all:
  *   get:
  *     summary: Get all applications (admin view)

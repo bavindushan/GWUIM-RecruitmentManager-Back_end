@@ -2,6 +2,23 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// Change application status (admin)
+exports.changeApplicationStatus = catchAsync(async (req, res, next) => {
+    const { applicationId } = req.params;
+    const { status, Remarks } = req.body;
+
+    const result = await applicationService.changeApplicationStatus(
+        parseInt(applicationId),
+        status,
+        Remarks || ''
+    );
+
+    res.status(200).json({
+        status: 'success',
+        message: result.message
+    });
+});
+
 // Get all applications (admin)
 exports.getAllApplications = catchAsync(async (req, res, next) => {
     const applications = await applicationService.getAllApplications();

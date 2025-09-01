@@ -4,6 +4,33 @@ const { BadRequestError, ValidationError, NotFoundError } = require('../utils/Ap
 const fs = require('fs');
 const path = require('path');
 
+// Change application status (Admin)
+exports.changeApplicationStatus = async (applicationId, status, remarks) => {
+    if (!applicationId || !status) {
+        throw new BadRequestError('Application ID and status are required.');
+    }
+
+    // Check if the application exists
+    const application = await prisma.application.findUnique({
+        where: { ApplicationID: applicationId }
+    });
+
+    if (!application) {
+        throw new NotFoundError('Application not found.');
+    }
+
+    // Update the status and optional remarks
+    await prisma.application.update({
+        where: { ApplicationID: applicationId },
+        data: {
+            Status: status,
+            Remarks: remarks
+        }
+    });
+
+    return { message: 'Application status updated successfully' };
+};
+
 // Get all applications for admin table
 exports.getAllApplications = async () => {
     const applications = await prisma.application.findMany({
