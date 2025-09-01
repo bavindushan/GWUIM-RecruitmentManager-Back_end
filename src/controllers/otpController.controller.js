@@ -1,16 +1,13 @@
 const { createOTP, verifyOTP } = require('../services/otpService.service');
-const sendSMS = require('../utils/sendSMS.js');
 
 // Generate OTP
 exports.generateOTP = async (req, res, next) => {
     try {
         const { purpose } = req.body;
         const userId = req.user.id; // from JWT
+        const phoneNumbers = [req.user.phoneNumber]; // array for multiple numbers support
 
-        const otpCode = await createOTP(userId, purpose);
-
-        // Send OTP via SMS API
-        await sendSMS(req.user.phoneNumber, `Your Password Reset OTP is: ${otpCode}`);
+        await createOTP(userId, purpose, phoneNumbers);
 
         res.status(200).json({ status: 'success', message: 'OTP sent successfully' });
     } catch (err) {
@@ -26,7 +23,6 @@ exports.verifyOTP = async (req, res, next) => {
 
         await verifyOTP(userId, otpCode, purpose);
 
-        // Apply changes (e.g., password reset) here if needed
         res.status(200).json({ status: 'success', message: 'OTP verified successfully' });
     } catch (err) {
         next(err);

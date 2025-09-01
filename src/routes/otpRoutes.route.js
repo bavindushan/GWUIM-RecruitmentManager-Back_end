@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { generateOTP, verifyOTP } = require('../controllers/otpController.controller');
+const otpController = require('../controllers/otpController.controller'); 
 const authMiddleware = require('../middleware/authMiddleware');
 const asyncHandler = require('express-async-handler');
 
@@ -30,7 +30,7 @@ const asyncHandler = require('express-async-handler');
  *       500:
  *         description: Server error
  */
-router.post('/generate-otp', authMiddleware, asyncHandler(generateOTP));
+router.post('/generate-otp', authMiddleware, asyncHandler(otpController.generateOTP));
 
 /**
  * @swagger
@@ -72,6 +72,6 @@ router.post('/generate-otp', authMiddleware, asyncHandler(generateOTP));
  *       500:
  *         description: Server error
  */
-router.post('/verify-otp', authMiddleware, asyncHandler(verifyOTP));
+router.post('/verify-otp', authMiddleware, asyncHandler(otpController.verifyOTP));
 
 module.exports = router;

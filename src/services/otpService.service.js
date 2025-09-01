@@ -2,19 +2,21 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const crypto = require('crypto');
 const AppError = require('../utils/AppError');
-
+const { sendSMS } = require('../utils/sendSMS');
 
 // Generate random 6-digit OTP
 function generateOTP() {
     return crypto.randomInt(100000, 999999).toString();
 }
 
-async function createOTP(userId, purpose) {
+async function createOTP(userId, purpose, phoneNumbers) {
     const otpCode = generateOTP();
-    const expiresAt = new Date(Date.now() + process.env.OTP_EXPIRATION_MINUTES * 60000);
+    const otpExpirationMinutes = Number(process.env.OTP_EXPIRATION_MINUTES) || 5; // default 5 min
+    const expiresAt = new Date(Date.now() + otpExpirationMinutes * 60000);
+
 
     // Store OTP in DB
-    await prisma.oTP.create({
+    await prisma.otp.create({
         data: {
             userId,
             otpCode,
@@ -23,11 +25,25 @@ async function createOTP(userId, purpose) {
         }
     });
 
+    // Send SMS with OTP
+    const message = `Your OTP for ${purpose} is ${otpCode}. It will expire in ${process.env.OTP_EXPIRATION_MINUTES} minutes.`;
+
+    try {
+        await sendSMS({
+            numbers: phoneNumbers,  // Example: ['94771234567', '94771234568']
+            message,
+            mask: 'GWUIM-Recruitment-System',
+            campaignName: 'OTP_Service_for_change_password'
+        });
+    } catch (error) {
+        console.error("Failed to send SMS:", error.message);
+    }
+
     return otpCode;
 }
 
 async function verifyOTP(userId, otpCode, purpose) {
-    const otpRecord = await prisma.oTP.findFirst({
+    const otpRecord = await prisma.otp.findFirst({
         where: { userId, otpCode, purpose }
     });
 
@@ -46,7 +62,7 @@ async function verifyOTP(userId, otpCode, purpose) {
 }
 
 async function deleteExpiredOTPs() {
-    await prisma.oTP.deleteMany({
+    await prisma.otp.deleteMany({
         where: {
             expiresAt: { lt: new Date() }
         }

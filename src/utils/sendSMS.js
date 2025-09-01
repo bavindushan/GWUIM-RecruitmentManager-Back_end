@@ -1,30 +1,57 @@
-// // utils/sendSMS.js
-// const twilio = require("twilio");
+const axios = require('axios');
+const crypto = require('crypto');
 
-// const accountSid = process.env.TWILIO_SID;
-// const authToken = process.env.TWILIO_AUTH_TOKEN;
-// const client = twilio(accountSid, authToken);
+const SMS_URL = process.env.SMS_API_URL; 
+const SMS_USERNAME = process.env.SMS_API_USERNAME; 
+const SMS_PASSWORD = process.env.SMS_API_PASSWORD;
 
-// async function sendSMS(to, message) {
-//   try {
-//     const response = await client.messages.create({
-//       body: message,
-//       from: process.env.TWILIO_PHONE_NUMBER, // Twilio Number
-//       to: to, // Recipient Number with country code
-//     });
-//     console.log("SMS sent:", response.sid);
-//     return true;
-//   } catch (err) {
-//     console.error("Error sending SMS:", err);
-//     return false;
-//   }
-// }
+function generateDigest(password) {
+    return crypto.createHash('md5').update(password).digest('hex');
+}
 
-// Note : for the Dialog API integration
+function getCreatedTimestamp() {
+    // ISO 8601 format: YYYY-MM-DDTHH:mm:ss (GMT)
+    return new Date().toISOString().split('.')[0];
+}
 
-// They will provide:
-// Endpoint URL
-// App ID
-// App Secret
+async function sendSMS({ numbers, message, mask, campaignName }) {
+    try {
+        if (!numbers || numbers.length === 0) {
+            throw new Error('No recipient numbers provided');
+        }
+        const digest = generateDigest(SMS_PASSWORD);
+        const now = getCreatedTimestamp();
 
-// module.exports = sendSMS;
+        // Construct payload according to Dialog API v4.2.1
+        const payload = {
+            messages: numbers.map((number, idx) => ({
+                clientRef: `ref_${Date.now()}_${idx}`, // unique reference per message
+                number,
+                mask,
+                text: message,
+                campaignName
+            }))
+        };
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'USER': SMS_USERNAME,
+            'DIGEST': digest,
+            'CREATED': now
+        };
+
+        const response = await axios.post(SMS_URL, payload, { headers });
+
+        if (response.data.resultCode !== 0) {
+            console.error('SMS API returned error:', response.data);
+            throw new Error(`SMS sending failed: ${response.data.resultDesc}`);
+        }
+
+        return response.data;
+    } catch (err) {
+        console.error('Error sending SMS:', err.response?.data || err.message);
+        throw new Error('Failed to send SMS');
+    }
+}
+
+module.exports = { sendSMS };
