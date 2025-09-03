@@ -9,7 +9,10 @@ const uploadRoutes = require('./uploadRoutes.route');
 const adminRoutes = require('./AdminRoutes.route')
 const applicationPrintRoutes = require('./applicationPrint.route');
 const otpRoutes = require('./otpRoutes.route');
+const superAdminRoutes = require('./superAdminRoutes.route');
 
+
+router.use('/super-admin', superAdminRoutes);
 router.use('/user', userRoutes);
 router.use('/jobs', jobRoutes);
 router.use('/applications', applicationRoutes);
