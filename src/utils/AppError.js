@@ -31,10 +31,17 @@ class ValidationError extends AppError {
     }
 }
 
+class ConflictError extends AppError {
+    constructor(message = 'Conflict') {
+        super(message, 409);
+    }
+}
+
 module.exports = {
     AppError,
     NotFoundError,
     BadRequestError,
     UnauthorizedError,
-    ValidationError
+    ValidationError,
+    ConflictError
 };

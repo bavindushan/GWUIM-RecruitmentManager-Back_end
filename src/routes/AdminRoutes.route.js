@@ -288,6 +288,7 @@ router.delete('/job-vacancy/:jobID', authMiddleware, asyncHandler(adminControlle
  *         description: Application not found
  */
 router.put('/application-status/:applicationID', authMiddleware, asyncHandler (adminController.updateApplicationStatus));
+
 /**
  * @swagger
  * /api/admin/applicants-all:
@@ -304,5 +305,49 @@ router.put('/application-status/:applicationID', authMiddleware, asyncHandler (a
  */
 router.get('/applicants-all', authMiddleware, asyncHandler(adminController.getAllApplicants));
 
+/**
+ * @swagger
+ * /api/admin/update-applicant/{id}:
+ *   put:
+ *     summary: Update applicant details and account status
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Applicant User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               FullName:
+ *                 type: string
+ *               Email:
+ *                 type: string
+ *               NIC:
+ *                 type: string
+ *               PhoneNumber:
+ *                 type: string
+ *               Address:
+ *                 type: string
+ *               AccountStatus:
+ *                 type: string
+ *                 enum: [Active, Suspended, Deleted]
+ *     responses:
+ *       200:
+ *         description: Applicant updated successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Applicant not found
+ */
+router.put('/update-applicant/:id', authMiddleware, asyncHandler(adminController.updateApplicant));
 
 module.exports = router;

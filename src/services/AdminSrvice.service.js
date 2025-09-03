@@ -1,10 +1,60 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const { BadRequestError, UnauthorizedError, ValidationError } = require('../utils/AppError');
-const { isValidEmail } = require('../utils/emailAndPhoneValidations');
+const { BadRequestError, UnauthorizedError, ValidationError, ConflictError } = require('../utils/AppError');
+const { isValidEmail, isValidPhoneNumber  } = require('../utils/emailAndPhoneValidations');
 const { hashPassword, comparePasswords } = require('../utils/passwordUtils');
 const generateToken = require('../utils/generateToken');
 const { logAdminAction } = require('./LogMionitoringService.service');
+
+exports.updateApplicant = async (userId, updateData) => {
+    const { FullName, Email, NIC, PhoneNumber, Address, AccountStatus } = updateData;
+
+    // Validate required fields
+    if (!FullName || !Email || !NIC || !PhoneNumber || !Address || !AccountStatus) {
+        throw new BadRequestError("All fields are required.");
+    }
+
+    // Validate email & phone format
+    if (!isValidEmail(Email)) {
+        throw new ValidationError("Invalid email format.");
+    }
+    if (!isValidPhoneNumber(PhoneNumber)) {
+        throw new ValidationError("Invalid phone number format.");
+    }
+
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({ where: { UserID: userId } });
+    if (!existingUser) {
+        throw new NotFoundError("Applicant not found.");
+    }
+
+    // Check for email or NIC conflicts with other users
+    const conflictUser = await prisma.user.findFirst({
+        where: {
+            OR: [{ Email }, { NIC }],
+            NOT: { UserID: userId }
+        }
+    });
+    if (conflictUser) {
+        throw new ConflictError("Email or NIC already exists for another user.");
+    }
+
+    // Update user
+    const updatedUser = await prisma.user.update({
+        where: { UserID: userId },
+        data: {
+            FullName,
+            Email,
+            NIC,
+            PhoneNumber,
+            Address,
+            AccountStatus,
+            UpdatedAt: new Date()
+        }
+    });
+
+    return updatedUser;
+};
 
 // Get all applicants
 exports.getAllApplicants = async () => {

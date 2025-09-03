@@ -2,6 +2,24 @@ const catchAsync = require('../utils/catchAsync');
 const { BadRequestError } = require('../utils/AppError');
 const adminService = require('../services/AdminSrvice.service');
 
+// Update applicant details
+exports.updateApplicant = catchAsync(async (req, res, next) => {
+    const userId = parseInt(req.params.id, 10);
+    const updateData = req.body;
+
+    if (isNaN(userId)) {
+        return next(new BadRequestError("Invalid applicant ID"));
+    }
+
+    const updatedUser = await adminService.updateApplicant(userId, updateData);
+
+    res.status(200).json({
+        status: "success",
+        message: "Applicant updated successfully",
+        data: updatedUser
+    });
+});
+
 // Fetch all applicants
 exports.getAllApplicants = catchAsync(async (req, res, next) => {
     const applicants = await adminService.getAllApplicants();
