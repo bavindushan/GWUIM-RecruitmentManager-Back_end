@@ -6,6 +6,32 @@ const { hashPassword, comparePasswords } = require('../utils/passwordUtils');
 const generateToken = require('../utils/generateToken');
 const { logAdminAction } = require('./LogMionitoringService.service');
 
+// Change applicant password
+exports.changeApplicantPassword = async (userId, newPassword) => {
+    if (!newPassword) {
+        throw new BadRequestError('New password is required');
+    }
+
+    // Hash the new password
+    const hashedPassword = await hashPassword(newPassword);
+
+    // Update user password
+    const updatedUser = await prisma.user.update({
+        where: { UserID: userId },
+        data: { PasswordHash: hashedPassword }
+    });
+
+    if (!updatedUser) {
+        throw new NotFoundError('Applicant not found');
+    }
+
+    return {
+        message: 'Applicant password changed successfully',
+        UserID: updatedUser.UserID,
+    };
+};
+
+// Update applicant
 exports.updateApplicant = async (userId, updateData) => {
     const { FullName, Email, NIC, PhoneNumber, Address, AccountStatus } = updateData;
 

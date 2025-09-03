@@ -350,4 +350,40 @@ router.get('/applicants-all', authMiddleware, asyncHandler(adminController.getAl
  */
 router.put('/update-applicant/:id', authMiddleware, asyncHandler(adminController.updateApplicant));
 
+/**
+ * @swagger
+ * /api/admin/change-applicant-password/{id}:
+ *   post:
+ *     summary: Change applicant password
+ *     description: Admin can change an applicant's password without knowing the old one.
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Applicant UserID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Applicant not found
+ */
+router.post('/change-applicant-password/:id', authMiddleware, asyncHandler(adminController.changeApplicantPassword));
+
 module.exports = router;

@@ -2,6 +2,23 @@ const catchAsync = require('../utils/catchAsync');
 const { BadRequestError } = require('../utils/AppError');
 const adminService = require('../services/AdminSrvice.service');
 
+// Change applicant password
+exports.changeApplicantPassword = catchAsync(async (req, res, next) => {
+    const userId = parseInt(req.params.id);
+    const { newPassword } = req.body;
+
+    if (!userId || isNaN(userId)) {
+        throw new BadRequestError('Invalid User ID');
+    }
+
+    const result = await adminService.changeApplicantPassword(userId, newPassword);
+
+    res.status(200).json({
+        status: 'success',
+        ...result,
+    });
+});
+
 // Update applicant details
 exports.updateApplicant = catchAsync(async (req, res, next) => {
     const userId = parseInt(req.params.id, 10);
