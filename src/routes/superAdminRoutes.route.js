@@ -305,4 +305,47 @@ router.delete('/admins/:id', authMiddleware, asyncHandler(superAdminController.s
  */
 router.get('/auditlog', authMiddleware, asyncHandler(superAdminController.getAllAuditLogs));
 
+/**
+ * @swagger
+ * /api/superadmin/admins:
+ *   get:
+ *     summary: Get all admins
+ *     tags: [SuperAdmin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of admins retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       AdminID:
+ *                         type: integer
+ *                       FullName:
+ *                         type: string
+ *                       Email:
+ *                         type: string
+ *                       Department:
+ *                         type: string
+ *                       PhoneNumber:
+ *                         type: string
+ *                       CreatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                       UpdatedAt:
+ *                         type: string
+ *                         format: date-time
+ */
+router.get('/admins', authMiddleware, asyncHandler(superAdminController.getAllAdmins));
+
+
 module.exports = router;

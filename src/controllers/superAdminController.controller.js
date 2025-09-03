@@ -2,6 +2,16 @@ const catchAsync = require('../utils/catchAsync');
 const { BadRequestError } = require('../utils/AppError');
 const superAdminService = require('../services/superAdminService.service');
 
+// Get all admins
+exports.getAllAdmins = catchAsync(async (req, res, next) => {
+    const admins = await superAdminService.getAllAdmins();
+
+    res.status(200).json({
+        status: "success",
+        data: admins,
+    });
+});
+
 // Get all audit logs
 exports.getAllAuditLogs = catchAsync(async (req, res, next) => {
     const logs = await superAdminService.getAllAuditLogs();

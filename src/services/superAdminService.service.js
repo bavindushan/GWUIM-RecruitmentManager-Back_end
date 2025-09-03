@@ -4,6 +4,23 @@ const { hashPassword, comparePasswords } = require('../utils/passwordUtils');
 const generateToken = require('../utils/generateToken');
 const { BadRequestError, UnauthorizedError } = require('../utils/AppError');
 
+// Fetch all admins excluding soft-deleted ones
+exports.getAllAdmins = async () => {
+    return prisma.admin.findMany({
+        where: { isDeleted: false },
+        orderBy: { CreatedAt: 'desc' },
+        select: {
+            AdminID: true,
+            FullName: true,
+            Email: true,
+            Department: true,
+            PhoneNumber: true,
+            CreatedAt: true,
+            UpdatedAt: true,
+        }
+    });
+};
+
 // Get all audit logs
 exports.getAllAuditLogs = async () => {
     return prisma.auditlog.findMany({
