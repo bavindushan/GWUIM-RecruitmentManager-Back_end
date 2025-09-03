@@ -6,6 +6,32 @@ const { hashPassword, comparePasswords } = require('../utils/passwordUtils');
 const generateToken = require('../utils/generateToken');
 const { logAdminAction } = require('./LogMionitoringService.service');
 
+// Get all applicants
+exports.getAllApplicants = async () => {
+    const applicants = await prisma.user.findMany({
+        select: {
+            UserID: true,
+            FullName: true,
+            Email: true,
+            NIC: true,
+            PhoneNumber: true,
+            Address: true,
+            AccountStatus: true,
+            CreatedAt: true,
+            UpdatedAt: true,
+        },
+        orderBy: {
+            CreatedAt: 'desc',
+        },
+    });
+
+    if (!applicants || applicants.length === 0) {
+        throw new NotFoundError('No applicants found');
+    }
+
+    return applicants;
+};
+
 // Update application status
 exports.updateApplicationStatus = async ({ adminID, applicationID, status, remarks }) => {
     const application = await prisma.application.findUnique({

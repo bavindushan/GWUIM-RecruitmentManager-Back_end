@@ -2,6 +2,16 @@ const catchAsync = require('../utils/catchAsync');
 const { BadRequestError } = require('../utils/AppError');
 const adminService = require('../services/AdminSrvice.service');
 
+// Fetch all applicants
+exports.getAllApplicants = catchAsync(async (req, res, next) => {
+    const applicants = await adminService.getAllApplicants();
+
+    res.status(200).json({
+        status: 'success',
+        data: applicants,
+    });
+});
+
 // Update application status
 exports.updateApplicationStatus = catchAsync(async (req, res, next) => {
     const { applicationID } = req.params;
