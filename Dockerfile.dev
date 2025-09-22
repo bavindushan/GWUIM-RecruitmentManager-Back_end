@@ -1,0 +1,23 @@
+# Use Node.js LTS
+FROM node:18
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Copy Prisma schema BEFORE npm install
+COPY prisma ./prisma
+
+# Install all dependencies (including dev)
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Expose backend port
+EXPOSE 5000
+
+# Run server in development mode with nodemon
+CMD ["npm", "run", "dev"]
