@@ -30,7 +30,7 @@ jobs:
       - name: Trigger CD workflow in deployment repo
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.GHCR_PAT }}
+          token: ${{ secrets.CD_TRIGGER_PAT }}
           repository: bavindushan/recruitment-system-deployment
           event-type: deploy-backend
           client-payload: '{"service": "backend"}'
