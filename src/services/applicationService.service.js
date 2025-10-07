@@ -105,93 +105,93 @@ exports.checkAlreadyApplied = async (userId, jobId) => {
     return { applied: !!existingApplication };
 };
 
-// Delete all academic related data by ApplicationID
+// Delete all related Academic records of an application and the application itself
 exports.deleteAllRelatedAC = async (applicationId) => {
-    if (!applicationId) throw new BadRequestError('Application ID is required.');
+    const appId = parseInt(applicationId, 10);
+    if (isNaN(appId) || appId <= 0) {
+        throw new BadRequestError('Invalid Application ID.');
+    }
 
     // Verify application exists
     const application = await prisma.application.findUnique({
-        where: { ApplicationID: applicationId },
-        include: { applicationattachments: true } // Include attachments to delete files
+        where: { ApplicationID: appId },
+        include: { applicationgeneraldetails: true } // include general academic details if needed
     });
 
     if (!application) throw new NotFoundError('Application not found.');
 
-    // 1️⃣ Delete files from disk (attachments)
-    if (application.applicationattachments.length > 0) {
-        for (const attachment of application.applicationattachments) {
-            const filePath = path.join(__dirname, '..', '..', 'uploads', 'resumes', attachment.FilePath);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-        }
+    // 1️⃣ Delete all related academic tables
+    if (application.applicationgeneraldetails) {
+        await prisma.applicationgeneraldetails.delete({
+            where: { ApplicationID: appId }
+        });
     }
 
-    // 2️⃣ Delete all related AC tables
-    await prisma.secondaryeducation.deleteMany({ where: { ApplicationID: applicationId } });
+    await prisma.additionalinfo.deleteMany({ where: { ApplicationID: appId } });
+    await prisma.applicationreferences.deleteMany({ where: { ApplicationID: appId } });
+    await prisma.employmenthistories.deleteMany({ where: { ApplicationID: appId } });
+    await prisma.languageproficiencies.deleteMany({ where: { ApplicationID: appId } });
+    await prisma.researchandpublications.deleteMany({ where: { ApplicationID: appId } });
+    await prisma.secondaryeducation.deleteMany({ where: { ApplicationID: appId } });
+    await prisma.universityeducations.deleteMany({ where: { ApplicationID: appId } });
 
-    // Delete first degree subjects first, then university educations
-    const universityRecords = await prisma.universityeducations.findMany({
-        where: { ApplicationID: applicationId },
-        include: { first_degree_subjects: true }
+    // 2️⃣ Delete the main application record
+    await prisma.application.delete({
+        where: { ApplicationID: appId }
     });
 
-    for (const uni of universityRecords) {
-        if (uni.first_degree_subjects.length > 0) {
-            await prisma.first_degree_subjects.deleteMany({ where: { UniversityEducationID: uni.UE_ID } });
-        }
-    }
-
-    await prisma.universityeducations.deleteMany({ where: { ApplicationID: applicationId } });
-
-    // Other academic-related tables
-    await prisma.generalDetails.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.professionalqualifications.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.specialqualifications.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.languageproficiencies.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.employmenthistories.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.experiencedetails.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.researchandpublications.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.applicationreferences.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.additionalinfo.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.applicationattachments.deleteMany({ where: { ApplicationID: applicationId } });
-
-    return { message: 'All related academic data deleted successfully.' };
+    return { message: 'Application and all related academic data deleted successfully.' };
 };
 
-// Delete all non-academic related data by ApplicationID
+// Delete all non-academic related data by ApplicationID and the application itself
 exports.deleteAllRelatedNA = async (applicationId) => {
-    if (!applicationId) throw new BadRequestError('Application ID is required.');
+    const appId = parseInt(applicationId, 10);
+    if (isNaN(appId)) throw new BadRequestError('Invalid Application ID.');
 
-    // Verify application exists
+    // Verify application exists with attachments
     const application = await prisma.application.findUnique({
-        where: { ApplicationID: applicationId },
-        include: { applicationattachments: true } // Include attachments to delete files
+        where: { ApplicationID: appId },
+        include: { applicationattachments: true },
     });
 
     if (!application) throw new NotFoundError('Application not found.');
 
-    // 1️⃣ Delete files from disk (if any attachments)
+    // 1️⃣ Delete attachment files from disk
     if (application.applicationattachments.length > 0) {
         for (const attachment of application.applicationattachments) {
-            const filePath = path.join(__dirname, '..', '..', 'uploads', 'resumes', attachment.filename);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
+            if (attachment.FilePath) {
+                try {
+                    const filename = attachment.FilePath.split('/').pop();
+                    const filePath = path.join(__dirname, '..', '..', 'uploads', 'resumes', filename);
+                    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+                } catch (err) {
+                    console.error('❌ Error deleting file:', err.message);
+                }
             }
         }
     }
 
-    // 2️⃣ Delete all related NA tables
-    await prisma.generalDetails.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.applicationattachments.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.experiencedetails.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.professionalqualifications.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.specialqualifications.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.gce_al_results.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.gce_ol_results.deleteMany({ where: { ApplicationID: applicationId } });
-    await prisma.universityeducations.deleteMany({ where: { ApplicationID: applicationId } });
+    // 2️⃣ Delete all related non-academic tables
+    if (application.applicationgeneraldetails) {
+        await prisma.applicationgeneraldetails.delete({
+            where: { ApplicationID: appId }
+        });
+    }
 
-    return { message: 'All related non-academic data deleted successfully.' };
+    await prisma.applicationattachments.deleteMany({ where: { ApplicationID: appId } });
+    await prisma.experiencedetails.deleteMany({ where: { ApplicationID: appId } });
+    await prisma.professionalqualifications.deleteMany({ where: { ApplicationID: appId } });
+    await prisma.specialqualifications.deleteMany({ where: { ApplicationID: appId } });
+    await prisma.gce_al_results.deleteMany({ where: { ApplicationID: appId } });
+    await prisma.gce_ol_results.deleteMany({ where: { ApplicationID: appId } });
+    await prisma.universityeducations.deleteMany({ where: { ApplicationID: appId } });
+
+    // 3️⃣ Delete the main application record
+    await prisma.application.delete({
+        where: { ApplicationID: appId }
+    });
+
+    return { message: 'Application and all related non-academic data deleted successfully.' };
 };
 
 // Save Additional Information for an application
@@ -701,6 +701,7 @@ exports.submitGceAlResults = async (userId, jobId, alResults) => {
 
     return { message: `${created.count} A/L results submitted successfully.` };
 };
+
 // Submit General Details for an application
 exports.submitGeneralDetails = async (userId, jobId, generalDetails) => {
     // 1. Validate required data

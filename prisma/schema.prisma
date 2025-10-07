@@ -65,7 +65,7 @@ model applicationattachments {
   FileType      String?      @db.VarChar(50)
   FilePath      String?      @db.VarChar(255)
   UploadedAt    DateTime?    @default(now()) @db.DateTime(0)
-  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "applicationattachments_ibfk_1")
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "applicationattachments_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
