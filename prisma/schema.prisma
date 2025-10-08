@@ -11,7 +11,7 @@ model additionalinfo {
   InfoID        Int          @id @default(autoincrement())
   ApplicationID Int?
   Content       String?      @db.Text
-  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "additionalinfo_ibfk_1")
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "additionalinfo_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
@@ -38,8 +38,8 @@ model application {
   Status                     application_Status?          @default(New)
   Remarks                    String?                      @db.Text
   additionalinfo             additionalinfo[]
-  user                       user?                        @relation(fields: [UserID], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "application_ibfk_1")
-  jobvacancy                 jobvacancy?                  @relation(fields: [JobID], references: [JobID], onDelete: NoAction, onUpdate: NoAction, map: "application_ibfk_2")
+  user                       user?                        @relation(fields: [UserID], references: [UserID], onDelete: Cascade, onUpdate: NoAction, map: "application_ibfk_1")
+  jobvacancy                 jobvacancy?                  @relation(fields: [JobID], references: [JobID], onDelete: Cascade, onUpdate: NoAction, map: "application_ibfk_2")
   applicationattachments     applicationattachments[]
   applicationgeneraldetails  applicationgeneraldetails?
   applicationreferences      applicationreferences[]
@@ -48,10 +48,8 @@ model application {
   gce_al_results             gce_al_results[]
   gce_ol_results             gce_ol_results[]
   languageproficiencies      languageproficiencies[]
-  physicalattributes_na      physicalattributes_na[]
   professionalqualifications professionalqualifications[]
   researchandpublications    researchandpublications[]
-  secondaryeducation         secondaryeducation[]
   specialqualifications      specialqualifications[]
   universityeducations       universityeducations[]
 
@@ -86,7 +84,7 @@ model applicationgeneraldetails {
   CitizenshipType     applicationgeneraldetails_CitizenshipType?
   CitizenshipDetails  String?                                    @db.Text
   EthnicityOrReligion String?                                    @db.VarChar(50)
-  application         application                                @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "applicationgeneraldetails_ibfk_1")
+  application         application                                @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "applicationgeneraldetails_ibfk_1")
 }
 
 model applicationreferences {
@@ -95,7 +93,7 @@ model applicationreferences {
   Name          String?      @db.VarChar(100)
   Designation   String?      @db.VarChar(100)
   Address       String?      @db.Text
-  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "applicationreferences_ibfk_1")
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "applicationreferences_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
@@ -106,7 +104,7 @@ model applicationtemplate {
   FilePath   String?                   @db.VarChar(255)
   UploadedBy Int?
   UploadDate DateTime?                 @default(now()) @db.DateTime(0)
-  admin      admin?                    @relation(fields: [UploadedBy], references: [AdminID], onDelete: NoAction, onUpdate: NoAction, map: "applicationtemplate_ibfk_1")
+  admin      admin?                    @relation(fields: [UploadedBy], references: [AdminID], onDelete: Cascade, onUpdate: NoAction, map: "applicationtemplate_ibfk_1")
   jobvacancy jobvacancy[]
 
   @@index([UploadedBy], map: "UploadedBy")
@@ -129,7 +127,7 @@ model employmenthistories {
   FromDate      DateTime?    @db.Date
   ToDate        DateTime?    @db.Date
   LastSalary    Decimal?     @db.Decimal(10, 2)
-  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "employmenthistories_ibfk_1")
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "employmenthistories_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
@@ -138,7 +136,7 @@ model experiencedetails {
   ExperienceID  Int          @id @default(autoincrement())
   ApplicationID Int?
   Description   String?      @db.Text
-  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "experiencedetails_ibfk_1")
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "experiencedetails_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
@@ -149,7 +147,7 @@ model gce_al_results {
   ExamYear      Int?
   Subject       String?      @db.VarChar(100)
   Grade         String?      @db.VarChar(10)
-  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "gce_al_results_ibfk_1")
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "gce_al_results_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
@@ -160,7 +158,7 @@ model gce_ol_results {
   ExamYear      Int?
   Subject       String?      @db.VarChar(100)
   Grade         String?      @db.VarChar(10)
-  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "gce_ol_results_ibfk_1")
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "gce_ol_results_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
@@ -178,8 +176,8 @@ model jobvacancy {
   Status              jobvacancy_Status?
   TemplateID          Int?
   application         application[]
-  admin               admin?               @relation(fields: [PostedBy], references: [AdminID], onDelete: NoAction, onUpdate: NoAction, map: "jobvacancy_ibfk_1")
-  applicationtemplate applicationtemplate? @relation(fields: [TemplateID], references: [TemplateID], onDelete: NoAction, onUpdate: NoAction, map: "jobvacancy_ibfk_2")
+  admin               admin?               @relation(fields: [PostedBy], references: [AdminID], onDelete: Cascade, onUpdate: NoAction, map: "jobvacancy_ibfk_1")
+  applicationtemplate applicationtemplate? @relation(fields: [TemplateID], references: [TemplateID], onDelete: Cascade, onUpdate: NoAction, map: "jobvacancy_ibfk_2")
 
   @@index([PostedBy], map: "PostedBy")
   @@index([TemplateID], map: "TemplateID")
@@ -193,7 +191,7 @@ model languageproficiencies {
   CanRead       languageproficiencies_CanRead?
   CanWrite      languageproficiencies_CanWrite?
   CanTeach      languageproficiencies_CanTeach?
-  application   application?                    @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "languageproficiencies_ibfk_1")
+  application   application?                    @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "languageproficiencies_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
@@ -206,7 +204,7 @@ model professionalqualifications {
   FromYear           Int?         @db.Year
   ToYear             Int?         @db.Year
   ResultOrExamPassed String?      @db.VarChar(100)
-  application        application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "professionalqualifications_ibfk_1")
+  application        application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "professionalqualifications_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
@@ -215,7 +213,7 @@ model researchandpublications {
   ResearchID    Int          @id @default(autoincrement())
   ApplicationID Int?
   Description   String?      @db.Text
-  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "researchandpublications_ibfk_1")
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "researchandpublications_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
@@ -224,7 +222,7 @@ model specialqualifications {
   SpecialQualID Int          @id @default(autoincrement())
   ApplicationID Int?
   Description   String?      @db.Text
-  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "specialqualifications_ibfk_1")
+  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "specialqualifications_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
@@ -239,17 +237,16 @@ model superadmin {
 }
 
 model universityeducations {
-  UE_ID                 Int                     @id @default(autoincrement())
-  ApplicationID         Int?
-  DegreeOrDiploma       String?                 @db.VarChar(100)
-  Institute             String?                 @db.VarChar(150)
-  FromYear              Int?                    @db.Year
-  ToYear                Int?                    @db.Year
-  Class                 String?                 @db.VarChar(50)
-  YearObtained          Int?                    @db.Year
-  IndexNumber           String?                 @db.VarChar(50)
-  first_degree_subjects first_degree_subjects[]
-  application           application?            @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "universityeducations_ibfk_1")
+  UE_ID           Int          @id @default(autoincrement())
+  ApplicationID   Int?
+  DegreeOrDiploma String?      @db.VarChar(100)
+  Institute       String?      @db.VarChar(150)
+  FromYear        Int?         @db.Year
+  ToYear          Int?         @db.Year
+  Class           String?      @db.VarChar(50)
+  YearObtained    Int?         @db.Year
+  IndexNumber     String?      @db.VarChar(50)
+  application     application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "universityeducations_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
 }
@@ -266,54 +263,6 @@ model user {
   CreatedAt     DateTime?           @default(now()) @db.DateTime(0)
   UpdatedAt     DateTime?           @default(now()) @db.DateTime(0)
   application   application[]
-  otp           otp[]
-}
-
-model physicalattributes_na {
-  ID            Int          @id @default(autoincrement())
-  ApplicationID Int?
-  HeightFeet    Int?
-  HeightInches  Int?
-  ChestInches   Int?
-  application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: NoAction, onUpdate: NoAction, map: "physicalattributes_na_ibfk_1")
-
-  @@index([ApplicationID], map: "ApplicationID")
-}
-
-model secondaryeducation {
-  SE_ID             Int         @id @default(autoincrement())
-  ApplicationID     Int
-  School            String      @db.VarChar(255)
-  FromYear          Int         @db.Year
-  ToYear            Int         @db.Year
-  ExaminationPassed String      @db.VarChar(255)
-  PassedYear        Int         @db.Year
-  application       application @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "secondaryeducation_ibfk_1")
-
-  @@index([ApplicationID], map: "ApplicationID")
-}
-
-model first_degree_subjects {
-  SubjectID             Int                  @id @default(autoincrement())
-  UniversityEducationID Int
-  MainSubject           String               @db.VarChar(255)
-  CreatedAt             DateTime?            @default(now()) @db.Timestamp(0)
-  UpdatedAt             DateTime?            @default(now()) @db.Timestamp(0)
-  universityeducations  universityeducations @relation(fields: [UniversityEducationID], references: [UE_ID], onDelete: Cascade, onUpdate: NoAction, map: "first_degree_subjects_ibfk_1")
-
-  @@index([UniversityEducationID], map: "UniversityEducationID")
-}
-
-model otp {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  otpCode   String   @db.VarChar(10)
-  purpose   String   @db.VarChar(50)
-  expiresAt DateTime @db.DateTime(0)
-  createdAt DateTime @default(now()) @db.DateTime(0)
-  user      user     @relation(fields: [userId], references: [UserID], onDelete: Cascade, onUpdate: NoAction, map: "fk_user")
-
-  @@index([userId], map: "userId")
 }
 
 enum applicationtemplate_Type {
