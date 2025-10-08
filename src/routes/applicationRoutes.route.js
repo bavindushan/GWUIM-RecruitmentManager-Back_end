@@ -6,6 +6,62 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/university-educations/{jobId}:
+ *   get:
+ *     summary: Get all university education records for a specific job application
+ *     description: Fetches all submitted university education records for the logged-in user under a given job.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Job ID to fetch university educations for
+ *     responses:
+ *       200:
+ *         description: List of university education records
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "success"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       UniversityEducationID:
+ *                         type: integer
+ *                       DegreeOrDiploma:
+ *                         type: string
+ *                       Institute:
+ *                         type: string
+ *                       FromYear:
+ *                         type: integer
+ *                       ToYear:
+ *                         type: integer
+ *                       Class:
+ *                         type: string
+ *                       YearObtained:
+ *                         type: integer
+ *                       IndexNumber:
+ *                         type: string
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: No records found
+ */
+router.get('/university-educations/:jobId', authMiddleware, asyncHandler(applicationController.getUniversityEducationsByJob));
+
+/**
+ * @swagger
  * /api/admin/download-cv/{applicationId}:
  *   get:
  *     summary: Download applicant's CV file

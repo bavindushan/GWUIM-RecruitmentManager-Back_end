@@ -4,6 +4,41 @@ const { BadRequestError, ValidationError, NotFoundError } = require('../utils/Ap
 const fs = require('fs');
 const path = require('path');
 
+// Service method to fetch university educations by job
+exports.getUniversityEducationsByJob = async (userId, jobId) => {
+    const application = await prisma.application.findFirst({
+        where: {
+            UserID: userId,
+            JobID: jobId,
+        },
+    });
+
+    if (!application) {
+        throw new NotFoundError('No application found for the given user and job.');
+    }
+
+    const records = await prisma.universityeducations.findMany({
+        where: {
+            ApplicationID: application.ApplicationID,
+        },
+        select: {
+            UE_ID: true,
+            DegreeOrDiploma: true,
+            Institute: true,
+            FromYear: true,
+            ToYear: true,
+            Class: true,
+            YearObtained: true,
+            IndexNumber: true,
+        },
+        orderBy: {
+            FromYear: 'asc',
+        },
+    });
+
+    return records;
+};
+
 // Function to download CV by ApplicationID
 exports.downloadCVByApplicationId = async (applicationId) => {
     if (!applicationId) {
