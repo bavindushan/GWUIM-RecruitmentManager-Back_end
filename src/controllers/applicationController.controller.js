@@ -2,6 +2,27 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// Get university educations by jobId
+exports.getUniversityEducationsByJob = catchAsync(async (req, res, next) => {
+    const userId = req.user?.id;
+    const jobId = parseInt(req.params.jobId, 10);
+
+    if (!jobId) {
+        throw new BadRequestError('Job ID is required.');
+    }
+
+    const records = await applicationService.getUniversityEducationsByJob(userId, jobId);
+
+    if (!records || records.length === 0) {
+        throw new NotFoundError('No university education records found for this job.');
+    }
+
+    res.status(200).json({
+        status: 'success',
+        data: records,
+    });
+});
+
 // For cv downloads
 exports.downloadCV = async (req, res, next) => {
     try {
@@ -72,7 +93,15 @@ exports.deleteAllRelatedAC = catchAsync(async (req, res, next) => {
 
 // Delete all related Non Academic records of an application
 exports.deleteAllRelatedNA = catchAsync(async (req, res, next) => {
-    const { applicationId } = req.params;
+    let { applicationId } = req.params;
+
+    // Convert to integer
+    applicationId = parseInt(applicationId, 10);
+
+    // Validate applicationId
+    if (isNaN(applicationId) || applicationId <= 0) {
+        throw new BadRequestError('Invalid application ID. It must be a positive integer.');
+    }
 
     const result = await applicationService.deleteAllRelatedNA(applicationId);
 
