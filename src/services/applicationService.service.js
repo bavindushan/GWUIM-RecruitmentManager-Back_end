@@ -63,30 +63,38 @@ exports.getUniversityEducationsByJob = async (userId, jobId) => {
     return records;
 };
 
-// Function to download CV by ApplicationID
+// Function to download CV (resume) by ApplicationID
 exports.downloadCVByApplicationId = async (applicationId) => {
     if (!applicationId) {
-        throw new BadRequestError('Application ID is required');
+        throw new BadRequestError("Application ID is required");
     }
 
-    // Fetch CV attachment
     const attachment = await prisma.applicationattachments.findFirst({
         where: {
             ApplicationID: applicationId,
-            FileType: 'CV'
-        }
+            OR: [
+                { FileType: "CV" },
+                { FileType: "resume/pdf" }
+            ]
+        },
     });
 
     if (!attachment || !attachment.FilePath) {
-        throw new NotFoundError('CV not found for this application');
+        throw new NotFoundError("CV or resume not found for this application");
     }
 
-    // Resolve full file path
-    const cvPath = path.resolve(attachment.FilePath);
+    let cvPath;
 
-    // Check if file exists
+    if (attachment.FilePath.startsWith("http")) {
+        // Convert the public URL to actual local path
+        const fileName = path.basename(attachment.FilePath); // e.g. "1759996401399-158819584.pdf"
+        cvPath = path.join(__dirname, "../../uploads/resumes", fileName);
+    } else {
+        cvPath = path.join(__dirname, "../../", attachment.FilePath);
+    }
+
     if (!fs.existsSync(cvPath)) {
-        throw new NotFoundError('CV file does not exist on server');
+        throw new NotFoundError("CV file does not exist on server");
     }
 
     return cvPath;

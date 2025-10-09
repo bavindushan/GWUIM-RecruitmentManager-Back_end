@@ -1,6 +1,8 @@
 const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
+const fs = require('fs');
+const path = require('path')
 
 // Delete application by application ID
 exports.deleteApplication = catchAsync(async (req, res, next) => {

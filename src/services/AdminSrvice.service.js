@@ -6,6 +6,25 @@ const { hashPassword, comparePasswords } = require('../utils/passwordUtils');
 const generateToken = require('../utils/generateToken');
 const { logAdminAction } = require('./LogMionitoringService.service');
 
+//get all jobs
+exports.getAllJobs = async () => {
+    const jobs = await prisma.jobvacancy.findMany({
+        select: {
+            JobID: true,
+            Title: true
+        },
+        orderBy: {
+            Title: 'asc'
+        }
+    });
+
+    if (!jobs || jobs.length === 0) {
+        throw new NotFoundError('No jobs found');
+    }
+
+    return jobs;
+};
+
 // Change applicant password
 exports.changeApplicantPassword = async (userId, newPassword) => {
     if (!newPassword) {
@@ -82,7 +101,7 @@ exports.updateApplicant = async (userId, updateData) => {
     return updatedUser;
 };
 
-// Get all applicants
+// Get all applicants with job details
 exports.getAllApplicants = async () => {
     const applicants = await prisma.user.findMany({
         select: {
@@ -95,10 +114,27 @@ exports.getAllApplicants = async () => {
             AccountStatus: true,
             CreatedAt: true,
             UpdatedAt: true,
+            application: {
+                select: {
+                    ApplicationID: true,
+                    JobID: true,
+                    Status: true,
+                    SubmissionDate: true,
+                    jobvacancy: {
+                        select: {
+                            JobID: true,
+                            Title: true,  // this is the post applied title
+                        }
+                    }
+                },
+                orderBy: {
+                    SubmissionDate: 'desc'
+                }
+            }
         },
         orderBy: {
-            CreatedAt: 'desc',
-        },
+            CreatedAt: 'desc'
+        }
     });
 
     if (!applicants || applicants.length === 0) {
@@ -106,6 +142,40 @@ exports.getAllApplicants = async () => {
     }
 
     return applicants;
+};
+
+// Fetch full application details by ApplicationID
+exports.getApplicationByID = async (applicationID) => {
+    const application = await prisma.application.findUnique({
+        where: { ApplicationID: parseInt(applicationID) },
+        include: {
+            user: true,
+            jobvacancy: { include: { applicationtemplate: true } },
+            applicationgeneraldetails: true,
+            applicationreferences: true,
+            employmenthistories: true,
+            experiencedetails: true,
+            gce_al_results: true,
+            gce_ol_results: true,
+            languageproficiencies: true,
+            professionalqualifications: true,
+            researchandpublications: true,
+            specialqualifications: true,
+            universityeducations: {
+                include: {
+                    firstdegreesubjects: true,
+                },
+            },
+            additionalinfo: true,
+            secondaryeducations: true,
+        },
+    });
+
+    if (!application) {
+        throw new NotFoundError('Application not found');
+    }
+
+    return application;
 };
 
 // Update application status
@@ -169,7 +239,6 @@ exports.deleteJobVacancy = async ({ adminID, jobID }) => {
 };
 
 // Update vacancy expiry date
-// Update vacancy expiry date
 exports.updateJobVacancyExpiryDate = async ({ adminID, jobID, newExpiryDate }) => {
     // Check if job exists
     const job = await prisma.jobvacancy.findUnique({ where: { JobID: jobID } });
@@ -202,7 +271,6 @@ exports.updateJobVacancyExpiryDate = async ({ adminID, jobID, newExpiryDate }) =
 
     return updatedJob;
 };
-
 
 // Post job vacancy
 exports.postJobVacancy = async ({
