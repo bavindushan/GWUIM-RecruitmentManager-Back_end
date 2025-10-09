@@ -291,7 +291,7 @@ exports.submitSecondaryEducations = async (applicationId, secondaryEducations) =
             throw new BadRequestError('All fields (School, FromYear, ToYear, ExaminationPassed, PassedYear) are required for each secondary education record.');
         }
 
-        const record = await prisma.secondaryeducation.create({
+        const record = await prisma.secondaryeducations.create({
             data: {
                 ApplicationID: applicationId,
                 School,
@@ -329,7 +329,7 @@ exports.addFirstDegreeSubjects = async (universityEducationId, subjects) => {
     for (const subjectName of subjects) {
         if (!subjectName || subjectName.trim() === '') continue;
 
-        const newSubject = await prisma.first_degree_subjects.create({
+        const newSubject = await prisma.firstdegreesubjects.create({
             data: {
                 UniversityEducationID: universityEducationId,
                 MainSubject: subjectName.trim(),

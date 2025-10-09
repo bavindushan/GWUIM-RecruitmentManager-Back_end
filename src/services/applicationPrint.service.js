@@ -64,12 +64,12 @@ async function fetchApplicationData(applicationID) {
             specialqualifications: true,
             universityeducations: {
                 include: {
-                    first_degree_subjects: true
+                    firstdegreesubjects: true
                 }
             },
             additionalinfo: true,
-            physicalattributes_na: true,
-            secondaryeducation: true,
+            // physicalattributes_na: true,
+            secondaryeducations: true,
         }
     });
 
@@ -668,7 +668,7 @@ async function drawAcademicSecondaryEducation(page, application, mapping, font, 
     if (!mapping.tables || !mapping.tables.SecondaryEducation) return;
 
     const tableMapping = mapping.tables.SecondaryEducation;
-    const tableData = application.secondaryeducation || []; // ✅ Use lowercase
+    const tableData = application.secondaryeducations || []; // ✅ Use lowercase
 
     // Table title
     let yPos = tableMapping.startY;
@@ -782,7 +782,7 @@ async function drawAcademicHigherEducation(page, application, mapping, font, bol
 
 // drawFirstDegreeSubjects
 async function drawFirstDegreeSubjects(page, application, mapping, font, boldFont, startY) {
-    const tableMapping = mapping?.FirstDegreeMainSubjects;
+    const tableMapping = mapping?.firstdegreesubjects;
 
     // If mapping is missing, just use defaults
     const startX = tableMapping?.startX ?? 40;
@@ -803,7 +803,7 @@ async function drawFirstDegreeSubjects(page, application, mapping, font, boldFon
     // Collect subjects
     const subjects = [];
     application.universityeducations?.forEach(uni => {
-        uni.first_degree_subjects?.forEach(sub => {
+        uni.firstdegreesubjects?.forEach(sub => {
             if (sub.MainSubject) subjects.push(sub.MainSubject);
         });
     });
