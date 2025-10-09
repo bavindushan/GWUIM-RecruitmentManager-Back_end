@@ -4,6 +4,30 @@ const { BadRequestError, ValidationError, NotFoundError } = require('../utils/Ap
 const fs = require('fs');
 const path = require('path');
 
+// Delete application service
+exports.deleteApplication = async (userId, applicationId) => {
+    // Check if the application exists and belongs to the user
+    const application = await prisma.application.findUnique({
+        where: { ApplicationID: applicationId },
+        select: { UserID: true }
+    });
+
+    if (!application) {
+        throw new NotFoundError('Application not found');
+    }
+
+    if (application.UserID !== userId) {
+        throw new UnauthorizedError('You are not allowed to delete this application');
+    }
+
+    // Delete the application (cascade will remove related records)
+    await prisma.application.delete({
+        where: { ApplicationID: applicationId }
+    });
+
+    return true;
+};
+
 // Service method to fetch university educations by job
 exports.getUniversityEducationsByJob = async (userId, jobId) => {
     const application = await prisma.application.findFirst({

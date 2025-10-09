@@ -2,6 +2,23 @@ const applicationService = require('../services/applicationService.service');
 const catchAsync = require('../utils/catchAsync');
 const { AppError, BadRequestError } = require('../utils/AppError');
 
+// Delete application by application ID
+exports.deleteApplication = catchAsync(async (req, res, next) => {
+    const userId = req.user?.id; // logged-in applicant
+    const applicationId = parseInt(req.params.applicationId);
+
+    if (!applicationId) {
+        return next(new BadRequestError('Application ID is required'));
+    }
+
+    await applicationService.deleteApplication(userId, applicationId);
+
+    res.status(200).json({
+        status: 'success',
+        message: 'Application deleted successfully'
+    });
+});
+
 // Get university educations by jobId
 exports.getUniversityEducationsByJob = catchAsync(async (req, res, next) => {
     const userId = req.user?.id;

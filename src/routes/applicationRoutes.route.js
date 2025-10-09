@@ -6,6 +6,46 @@ const applicationController = require('../controllers/applicationController.cont
 
 /**
  * @swagger
+ * /api/applications/{applicationId}:
+ *   delete:
+ *     summary: Delete an application (applicant)
+ *     description: Allows a logged-in applicant to delete their own application by ID.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: applicationId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the application to delete
+ *     responses:
+ *       200:
+ *         description: Application deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Application deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Application not found
+ *       500:
+ *         description: Server error
+ */
+router.delete('/:applicationId', authMiddleware, asyncHandler(applicationController.deleteApplication));
+
+/**
+ * @swagger
  * /api/applications/university-educations/{jobId}:
  *   get:
  *     summary: Get all university education records for a specific job application
