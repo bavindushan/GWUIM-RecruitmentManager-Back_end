@@ -4,6 +4,30 @@ const { BadRequestError, ValidationError, NotFoundError } = require('../utils/Ap
 const fs = require('fs');
 const path = require('path');
 
+// Delete application service
+exports.deleteApplication = async (userId, applicationId) => {
+    // Check if the application exists and belongs to the user
+    const application = await prisma.application.findUnique({
+        where: { ApplicationID: applicationId },
+        select: { UserID: true }
+    });
+
+    if (!application) {
+        throw new NotFoundError('Application not found');
+    }
+
+    if (application.UserID !== userId) {
+        throw new UnauthorizedError('You are not allowed to delete this application');
+    }
+
+    // Delete the application (cascade will remove related records)
+    await prisma.application.delete({
+        where: { ApplicationID: applicationId }
+    });
+
+    return true;
+};
+
 // Service method to fetch university educations by job
 exports.getUniversityEducationsByJob = async (userId, jobId) => {
     const application = await prisma.application.findFirst({
@@ -291,7 +315,7 @@ exports.submitSecondaryEducations = async (applicationId, secondaryEducations) =
             throw new BadRequestError('All fields (School, FromYear, ToYear, ExaminationPassed, PassedYear) are required for each secondary education record.');
         }
 
-        const record = await prisma.secondaryeducation.create({
+        const record = await prisma.secondaryeducations.create({
             data: {
                 ApplicationID: applicationId,
                 School,
@@ -329,7 +353,7 @@ exports.addFirstDegreeSubjects = async (universityEducationId, subjects) => {
     for (const subjectName of subjects) {
         if (!subjectName || subjectName.trim() === '') continue;
 
-        const newSubject = await prisma.first_degree_subjects.create({
+        const newSubject = await prisma.firstdegreesubjects.create({
             data: {
                 UniversityEducationID: universityEducationId,
                 MainSubject: subjectName.trim(),
