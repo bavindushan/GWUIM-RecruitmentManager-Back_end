@@ -127,41 +127,90 @@ exports.changeApplicationStatus = async (applicationId, status, remarks) => {
     return { message: 'Application status updated successfully' };
 };
 
-// Get all applications for admin table (with job details)
+// Get all applications with full details for admin
 exports.getAllApplications = async () => {
     const applications = await prisma.application.findMany({
         select: {
             ApplicationID: true,
             Status: true,
             SubmissionDate: true,
+            UserID: true,
+            JobID: true,
+            Remarks: true,
+            additionalinfo: true,
             user: {
                 select: {
                     FullName: true,
                     Email: true,
+                    NIC: true,
+                    PhoneNumber: true,
+                    Address: true,
+                    AccountStatus: true,
+                    CreatedAt: true,
+                    UpdatedAt: true,
                 },
             },
-            jobvacancy: { // ✅ include job title
+            jobvacancy: {
                 select: {
                     JobID: true,
                     Title: true,
+                    Department: true,
+                    Description: true,
                 },
             },
+            applicationgeneraldetails: true,
+            universityeducations: {
+                include: {
+                    firstdegreesubjects: true
+                }
+            },
+            professionalqualifications: true,
+            applicationreferences: true,
+            researchandpublications: true,
+            applicationattachments: true,
+            employmenthistories: true,
+            experiencedetails: true,
+            gce_al_results: true,
+            gce_ol_results: true,
+            languageproficiencies: true,
+            secondaryeducations: true,
+            specialqualifications: true,
         },
         orderBy: {
-            SubmissionDate: 'desc',
+            SubmissionDate: "desc",
         },
     });
 
-    // ✅ Format the response for the frontend
-    return applications.map((app) => ({
+    // Format for frontend
+    return applications.map(app => ({
         ApplicationID: app.ApplicationID,
-        FullName: app.user?.FullName || "N/A",
-        Email: app.user?.Email || "N/A",
-        PostApplied: app.jobvacancy?.Title || "N/A",
         Status: app.Status,
         SubmissionDate: app.SubmissionDate,
+        PostApplied: app.applicationgeneraldetails?.PostApplied || "N/A",
+        Department: app.jobvacancy?.Department || "N/A",
+        Description: app.jobvacancy?.Description || "N/A",
+        FullName: app.user?.FullName || "N/A",
+        Email: app.user?.Email || "N/A",
+        NIC: app.user?.NIC || "N/A",
+        PhoneNumber: app.user?.PhoneNumber || "N/A",
+        Address: app.user?.Address || "N/A",
+        AccountStatus: app.user?.AccountStatus || "N/A",
+        applicationgeneraldetails: app.applicationgeneraldetails || null,
+        universityeducations: app.universityeducations || [],
+        professionalqualifications: app.professionalqualifications || [],
+        applicationreferences: app.applicationreferences || [],
+        researchandpublications: app.researchandpublications || [],
+        applicationattachments: app.applicationattachments || [],
+        employmenthistories: app.employmenthistories || [],
+        experiencedetails: app.experiencedetails || [],
+        gce_al_results: app.gce_al_results || [],
+        gce_ol_results: app.gce_ol_results || [],
+        languageproficiencies: app.languageproficiencies || [],
+        secondaryeducations: app.secondaryeducations || [],
+        specialqualifications: app.specialqualifications || [],
     }));
 };
+
 
 // Check if applicant already applied for a job
 exports.checkAlreadyApplied = async (userId, jobId) => {
