@@ -78,10 +78,11 @@ exports.getAllApplications = catchAsync(async (req, res, next) => {
     const applications = await applicationService.getAllApplications();
 
     res.status(200).json({
-        status: 'success',
-        data: applications
+        status: "success",
+        data: applications,
     });
 });
+
 
 // Check if already applied
 exports.checkAlreadyApplied = async (req, res, next) => {

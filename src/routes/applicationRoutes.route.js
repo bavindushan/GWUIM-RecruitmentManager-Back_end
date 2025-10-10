@@ -180,7 +180,7 @@ router.post( '/change-application-status/:applicationId', authMiddleware, asyncH
  * /api/admin/applications-all:
  *   get:
  *     summary: Get all applications (admin view)
- *     description: Fetch all applications to display in the admin table.
+ *     description: Fetch all applications with applicant and job details.
  *     tags:
  *       - Applications
  *     security:
@@ -207,14 +207,21 @@ router.post( '/change-application-status/:applicationId', authMiddleware, asyncH
  *                         type: string
  *                       Email:
  *                         type: string
+ *                       PostApplied:
+ *                         type: string
  *                       Status:
  *                         type: string
+ *                       SubmissionDate:
+ *                         type: string
+ *                         format: date-time
  *       401:
  *         description: Unauthorized
+ *       404:
+ *         description: No applications found
  *       500:
  *         description: Server error
  */
-router.get('/applications-all', authMiddleware, asyncHandler(applicationController.getAllApplications));
+router.get("/applications-all",authMiddleware,asyncHandler(applicationController.getAllApplications));
 
 /**
  * @swagger

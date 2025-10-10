@@ -127,31 +127,39 @@ exports.changeApplicationStatus = async (applicationId, status, remarks) => {
     return { message: 'Application status updated successfully' };
 };
 
-// Get all applications for admin table
+// Get all applications for admin table (with job details)
 exports.getAllApplications = async () => {
     const applications = await prisma.application.findMany({
         select: {
             ApplicationID: true,
             Status: true,
             SubmissionDate: true,
-            user: {                // fetch related user info
+            user: {
                 select: {
                     FullName: true,
-                    Email: true
-                }
-            }
+                    Email: true,
+                },
+            },
+            jobvacancy: { // ✅ include job title
+                select: {
+                    JobID: true,
+                    Title: true,
+                },
+            },
         },
         orderBy: {
-            SubmissionDate: 'desc'
-        }
+            SubmissionDate: 'desc',
+        },
     });
 
-    // Format the response to match frontend expectation
-    return applications.map(app => ({
+    // ✅ Format the response for the frontend
+    return applications.map((app) => ({
         ApplicationID: app.ApplicationID,
-        FullName: app.user?.FullName || '',
-        Email: app.user?.Email || '',
-        Status: app.Status
+        FullName: app.user?.FullName || "N/A",
+        Email: app.user?.Email || "N/A",
+        PostApplied: app.jobvacancy?.Title || "N/A",
+        Status: app.Status,
+        SubmissionDate: app.SubmissionDate,
     }));
 };
 
