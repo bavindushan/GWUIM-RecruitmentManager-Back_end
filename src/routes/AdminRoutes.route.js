@@ -130,6 +130,22 @@ router.post('/sign-up', asyncHandler(adminController.signUpAdmin));
 
 /**
  * @swagger
+ * /api/admin/jobs-all:
+ *   get:
+ *     summary: Fetch all job vacancies
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all jobs
+ *       404:
+ *         description: No jobs found
+ */
+router.get('/jobs-all', authMiddleware, asyncHandler(adminController.getAllJobs));
+
+/**
+ * @swagger
  * /api/admins/job-vacancies:
  *   post:
  *     summary: Post a new job vacancy
@@ -304,6 +320,30 @@ router.put('/application-status/:applicationID', authMiddleware, asyncHandler (a
  *         description: No applicants found
  */
 router.get('/applicants-all', authMiddleware, asyncHandler(adminController.getAllApplicants));
+
+/**
+ * @swagger
+ * /api/admin/applications/{applicationID}:
+ *   get:
+ *     summary: Fetch full application details by ApplicationID
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: applicationID
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the application to fetch
+ *     responses:
+ *       200:
+ *         description: Application details fetched successfully
+ *       404:
+ *         description: Application not found
+ */
+router.get('/applications/:applicationID',authMiddleware,asyncHandler(adminController.getApplicationByID));
+
 
 /**
  * @swagger

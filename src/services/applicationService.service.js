@@ -63,30 +63,38 @@ exports.getUniversityEducationsByJob = async (userId, jobId) => {
     return records;
 };
 
-// Function to download CV by ApplicationID
+// Function to download CV (resume) by ApplicationID
 exports.downloadCVByApplicationId = async (applicationId) => {
     if (!applicationId) {
-        throw new BadRequestError('Application ID is required');
+        throw new BadRequestError("Application ID is required");
     }
 
-    // Fetch CV attachment
     const attachment = await prisma.applicationattachments.findFirst({
         where: {
             ApplicationID: applicationId,
-            FileType: 'CV'
-        }
+            OR: [
+                { FileType: "CV" },
+                { FileType: "resume/pdf" }
+            ]
+        },
     });
 
     if (!attachment || !attachment.FilePath) {
-        throw new NotFoundError('CV not found for this application');
+        throw new NotFoundError("CV or resume not found for this application");
     }
 
-    // Resolve full file path
-    const cvPath = path.resolve(attachment.FilePath);
+    let cvPath;
 
-    // Check if file exists
+    if (attachment.FilePath.startsWith("http")) {
+        // Convert the public URL to actual local path
+        const fileName = path.basename(attachment.FilePath); // e.g. "1759996401399-158819584.pdf"
+        cvPath = path.join(__dirname, "../../uploads/resumes", fileName);
+    } else {
+        cvPath = path.join(__dirname, "../../", attachment.FilePath);
+    }
+
     if (!fs.existsSync(cvPath)) {
-        throw new NotFoundError('CV file does not exist on server');
+        throw new NotFoundError("CV file does not exist on server");
     }
 
     return cvPath;
@@ -119,31 +127,39 @@ exports.changeApplicationStatus = async (applicationId, status, remarks) => {
     return { message: 'Application status updated successfully' };
 };
 
-// Get all applications for admin table
+// Get all applications for admin table (with job details)
 exports.getAllApplications = async () => {
     const applications = await prisma.application.findMany({
         select: {
             ApplicationID: true,
             Status: true,
             SubmissionDate: true,
-            user: {                // fetch related user info
+            user: {
                 select: {
                     FullName: true,
-                    Email: true
-                }
-            }
+                    Email: true,
+                },
+            },
+            jobvacancy: { // ✅ include job title
+                select: {
+                    JobID: true,
+                    Title: true,
+                },
+            },
         },
         orderBy: {
-            SubmissionDate: 'desc'
-        }
+            SubmissionDate: 'desc',
+        },
     });
 
-    // Format the response to match frontend expectation
-    return applications.map(app => ({
+    // ✅ Format the response for the frontend
+    return applications.map((app) => ({
         ApplicationID: app.ApplicationID,
-        FullName: app.user?.FullName || '',
-        Email: app.user?.Email || '',
-        Status: app.Status
+        FullName: app.user?.FullName || "N/A",
+        Email: app.user?.Email || "N/A",
+        PostApplied: app.jobvacancy?.Title || "N/A",
+        Status: app.Status,
+        SubmissionDate: app.SubmissionDate,
     }));
 };
 
