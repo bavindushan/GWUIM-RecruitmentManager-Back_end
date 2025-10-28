@@ -14,6 +14,7 @@ model additionalinfo {
   application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "additionalinfo_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+  @@map("additionalinfo")
 }
 
 model admin {
@@ -28,6 +29,8 @@ model admin {
   isDeleted           Boolean?              @default(false)
   applicationtemplate applicationtemplate[]
   jobvacancy          jobvacancy[]
+
+  @@map("admin")
 }
 
 model application {
@@ -56,6 +59,7 @@ model application {
 
   @@index([JobID], map: "JobID")
   @@index([UserID], map: "UserID")
+  @@map("application")
 }
 
 model applicationattachments {
@@ -67,6 +71,7 @@ model applicationattachments {
   application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "applicationattachments_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+  @@map("applicationattachments")
 }
 
 model applicationgeneraldetails {
@@ -86,6 +91,8 @@ model applicationgeneraldetails {
   CitizenshipDetails  String?                                    @db.Text
   EthnicityOrReligion String?                                    @db.VarChar(50)
   application         application                                @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "applicationgeneraldetails_ibfk_1")
+
+  @@map("applicationgeneraldetails")
 }
 
 model applicationreferences {
@@ -97,6 +104,7 @@ model applicationreferences {
   application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "applicationreferences_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+  @@map("applicationreferences")
 }
 
 model applicationtemplate {
@@ -109,6 +117,7 @@ model applicationtemplate {
   jobvacancy jobvacancy[]
 
   @@index([UploadedBy], map: "UploadedBy")
+  @@map("applicationtemplate")
 }
 
 model auditlog {
@@ -118,6 +127,8 @@ model auditlog {
   Action    String?             @db.VarChar(150)
   Timestamp DateTime?           @default(now()) @db.DateTime(0)
   Details   String?             @db.Text
+
+  @@map("auditlog")
 }
 
 model employmenthistories {
@@ -131,6 +142,7 @@ model employmenthistories {
   application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "employmenthistories_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+  @@map("employmenthistories")
 }
 
 model experiencedetails {
@@ -140,6 +152,7 @@ model experiencedetails {
   application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "experiencedetails_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+  @@map("experiencedetails")
 }
 
 model gce_al_results {
@@ -151,6 +164,7 @@ model gce_al_results {
   application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "gce_al_results_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+  @@map("gce_al_results")
 }
 
 model gce_ol_results {
@@ -162,6 +176,7 @@ model gce_ol_results {
   application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "gce_ol_results_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+  @@map("gce_ol_results")
 }
 
 model jobvacancy {
@@ -182,6 +197,7 @@ model jobvacancy {
 
   @@index([PostedBy], map: "PostedBy")
   @@index([TemplateID], map: "TemplateID")
+  @@map("jobvacancy")
 }
 
 model languageproficiencies {
@@ -195,6 +211,7 @@ model languageproficiencies {
   application   application?                    @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "languageproficiencies_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+  @@map("languageproficiencies")
 }
 
 model professionalqualifications {
@@ -208,6 +225,7 @@ model professionalqualifications {
   application        application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "professionalqualifications_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+  @@map("professionalqualifications")
 }
 
 model researchandpublications {
@@ -217,6 +235,21 @@ model researchandpublications {
   application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "researchandpublications_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+  @@map("researchandpublications")
+}
+
+model secondaryeducations {
+  SE_ID             Int         @id @default(autoincrement())
+  ApplicationID     Int
+  School            String      @db.VarChar(150)
+  FromYear          Int         @db.Year
+  ToYear            Int         @db.Year
+  ExaminationPassed String      @db.VarChar(100)
+  PassedYear        Int         @db.Year
+  application       application @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "secondaryeducations_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
+  @@map("secondaryeducations")
 }
 
 model specialqualifications {
@@ -226,6 +259,7 @@ model specialqualifications {
   application   application? @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "specialqualifications_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+  @@map("specialqualifications")
 }
 
 model superadmin {
@@ -235,6 +269,8 @@ model superadmin {
   PasswordHash String?   @db.VarChar(255)
   PhoneNumber  String?   @db.VarChar(20)
   CreatedAt    DateTime? @default(now()) @db.DateTime(0)
+
+  @@map("superadmin")
 }
 
 model universityeducations {
@@ -251,6 +287,7 @@ model universityeducations {
   application         application?          @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "universityeducations_ibfk_1")
 
   @@index([ApplicationID], map: "ApplicationID")
+  @@map("universityeducations")
 }
 
 model user {
@@ -265,19 +302,8 @@ model user {
   CreatedAt     DateTime?           @default(now()) @db.DateTime(0)
   UpdatedAt     DateTime?           @default(now()) @db.DateTime(0)
   application   application[]
-}
 
-model secondaryeducations {
-  SE_ID             Int         @id @default(autoincrement())
-  ApplicationID     Int
-  School            String      @db.VarChar(150)
-  FromYear          Int         @db.Year
-  ToYear            Int         @db.Year
-  ExaminationPassed String      @db.VarChar(100)
-  PassedYear        Int         @db.Year
-  application       application @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "secondaryeducations_ibfk_1")
-
-  @@index([ApplicationID], map: "ApplicationID")
+  @@map("user")
 }
 
 model firstdegreesubjects {
@@ -287,6 +313,7 @@ model firstdegreesubjects {
   universityeducations  universityeducations @relation(fields: [UniversityEducationID], references: [UE_ID], onDelete: Cascade, onUpdate: NoAction, map: "firstdegreesubjects_ibfk_1")
 
   @@index([UniversityEducationID], map: "UniversityEducationID")
+  @@map("firstdegreesubjects")
 }
 
 enum applicationtemplate_Type {

@@ -56,6 +56,20 @@ exports.downloadCV = async (req, res, next) => {
     }
 };
 
+// For transcecript downloads
+exports.downloadTransecript = async (req, res, next) => {
+    try {
+        const { applicationId } = req.params;
+
+        const cvPath = await applicationService.downloadTranscriptByApplicationId(parseInt(applicationId));
+
+        // Send file
+        return res.download(cvPath, `Transcript_${applicationId}${path.extname(cvPath)}`);
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Change application status (admin)
 exports.changeApplicationStatus = catchAsync(async (req, res, next) => {
     const { applicationId } = req.params;

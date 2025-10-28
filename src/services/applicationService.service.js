@@ -74,7 +74,7 @@ exports.downloadCVByApplicationId = async (applicationId) => {
             ApplicationID: applicationId,
             OR: [
                 { FileType: "CV" },
-                { FileType: "resume/pdf" }
+                { FileType: "resume/pdf" },
             ]
         },
     });
@@ -99,6 +99,44 @@ exports.downloadCVByApplicationId = async (applicationId) => {
 
     return cvPath;
 };
+
+// Function to download CV (resume) by ApplicationID
+exports.downloadTranscriptByApplicationId = async (applicationId) => {
+    if (!applicationId) {
+        throw new BadRequestError("Application ID is required");
+    }
+
+    const attachment = await prisma.applicationattachments.findFirst({
+        where: {
+            ApplicationID: applicationId,
+            OR: [
+                { FileType: "transcript/pdf" },
+                { FileType: "Transcript" }
+            ]
+        },
+    });
+
+    if (!attachment || !attachment.FilePath) {
+        throw new NotFoundError("Trancscript not found for this application");
+    }
+
+    let TranscriptPath;
+
+    if (attachment.FilePath.startsWith("http")) {
+        // Convert the public URL to actual local path
+        const fileName = path.basename(attachment.FilePath); // e.g. "1759996401399-158819584.pdf"
+        TranscriptPath = path.join(__dirname, "../../uploads/resumes", fileName);
+    } else {
+        TranscriptPath = path.join(__dirname, "../../", attachment.FilePath);
+    }
+
+    if (!fs.existsSync(TranscriptPath)) {
+        throw new NotFoundError("Trancscript file does not exist on server");
+    }
+
+    return TranscriptPath;
+};
+
 
 // Change application status (Admin)
 exports.changeApplicationStatus = async (applicationId, status, remarks) => {

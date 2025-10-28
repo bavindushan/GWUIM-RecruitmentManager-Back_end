@@ -136,6 +136,40 @@ router.get('/download-cv/:applicationId', authMiddleware, asyncHandler(applicati
 
 /**
  * @swagger
+ * /api/admin/download-trancecript/{applicationId}:
+ *   get:
+ *     summary: Download applicant's Transcript file
+ *     description: Admin can download the Transcript uploaded by the applicant for a given application ID.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: applicationId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the application
+ *     responses:
+ *       200:
+ *         description: Transcript file downloaded successfully
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: Invalid Application ID
+ *       404:
+ *         description: Transcript not found
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/download-transcript/:applicationId', authMiddleware, asyncHandler(applicationController.downloadTransecript));
+
+/**
+ * @swagger
  * /api/admin/change-application-status/{applicationId}:
  *   post:
  *     summary: Change the status of an application
