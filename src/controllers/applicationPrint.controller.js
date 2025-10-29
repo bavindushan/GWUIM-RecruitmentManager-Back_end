@@ -1,3 +1,4 @@
+// controllers/applicationPrint.controller.js
 const { generateApplicationPDF } = require('../services/applicationPrint.service');
 const { NotFoundError, BadRequestError } = require('../utils/AppError');
 
@@ -8,15 +9,15 @@ exports.downloadApplication = async (req, res, next) => {
         if (!applicationId) {
             throw new NotFoundError('Application ID is required');
         }
-        // Convert to integer
-        appId  = parseInt(applicationId, 10);
 
-        if (isNaN(appId )) {
+        const appId = parseInt(applicationId, 10);
+
+        if (isNaN(appId)) {
             throw new BadRequestError('Invalid Application ID');
         }
 
-        // Call your PDF generator service to get PDF bytes
-        const pdfBytes = await generateApplicationPDF(appId );
+        // Call your PDF generator service
+        const pdfBytes = await generateApplicationPDF(appId);
 
         if (!pdfBytes) {
             throw new NotFoundError('Failed to generate application PDF');
@@ -31,6 +32,7 @@ exports.downloadApplication = async (req, res, next) => {
 
         return res.send(Buffer.from(pdfBytes));
     } catch (error) {
-        next(error);
+        console.error('Download Application Error:', error); // ✅ Full error log
+        next(error); // Let your error middleware handle it
     }
 };

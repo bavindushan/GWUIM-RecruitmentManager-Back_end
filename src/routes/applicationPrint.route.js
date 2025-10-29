@@ -45,6 +45,10 @@ const applicationPrintController = require('../controllers/applicationPrint.cont
  *       500:
  *         description: Internal server error during PDF generation
  */
-router.get('/download/:applicationId', authMiddleware, asyncHandler(applicationPrintController.downloadApplication));
+router.get(
+    '/download/:applicationId',
+    authMiddleware,
+    asyncHandler(applicationPrintController.downloadApplication)
+);
 
 module.exports = router;
