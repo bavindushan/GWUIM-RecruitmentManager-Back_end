@@ -665,30 +665,56 @@ async function drawExperiences(doc, application, type = 'general') {
     const expDetails = application.experiencedetails;
     if (!expDetails || expDetails.length === 0) return;
 
+    // --- Ensure Y-position initialized ---
+    if (typeof yAcademic === 'undefined') yAcademic = marginTop;
+    if (typeof yGeneral === 'undefined') yGeneral = marginTop;
+
     // --- Section Title ---
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     const titleY = type === 'academic' ? yAcademic : yGeneral;
     doc.text('Experience Details', marginLeft, titleY);
-    addSpacing(doc, 8, type); // slightly smaller than before
+    addSpacing(doc, 8, type);
 
-    // --- Draw each experience point-wise ---
+    // --- Handle experience details content ---
     const fontSize = 11;
     const bullet = '• ';
 
-    expDetails.forEach(exp => {
-        doc.setFont('helvetica', 'normal'); // ensure data is not bold
-        const line = `${bullet}${exp.Description || ''}`;
-        // draw text and get updated Y position
-        drawWrappedText(doc, line, { x: marginLeft, fontSize, type });
-        // addSpacing(doc, 1.5, type); // minimal spacing between points
+    // Prepare table rows with a single column for text (bullet point style)
+    const tableBody = expDetails.map(exp => {
+        const description = exp.Description || '';  // Ensure Description is a valid string
+        return [`${bullet} ${description.trim()}`]; // Add bullet point and trim spaces
+    });
+
+    if (!tableBody.length) {
+        console.log("Experience Details table body empty");
+        return;
+    }
+
+    const startY = type === 'academic' ? yAcademic : yGeneral;
+
+    // --- Add the table to the PDF ---
+    doc.autoTable({
+        body: tableBody,
+        startY,
+        margin: { left: marginLeft, right: marginRight },
+        styles: { font: 'helvetica', fontSize, cellPadding: 2, overflow: 'linebreak' },
+        headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0], fontStyle: 'bold' },
+        theme: 'grid',
+        didDrawPage: (data) => {
+            const nextY = data.cursor.y + 6;
+            if (type === 'academic') yAcademic = nextY;
+            else yGeneral = nextY;
+        }
     });
 
     // --- Extra spacing at the end of section ---
-    addSpacing(doc, 1, type);
-    // --- Draw horizontal line below section ---
+    addSpacing(doc, 4, type);
+
+    // --- Divider line below section ---
     drawSectionLine(doc, type);
 }
+
 
 
 // ---------------------------
@@ -698,6 +724,10 @@ async function drawSpecialQualifications(doc, application, type = 'general') {
     const specials = application.specialqualifications;
     if (!specials || specials.length === 0) return;
 
+    // --- Ensure Y-position initialized ---
+    if (typeof yAcademic === 'undefined') yAcademic = marginTop;
+    if (typeof yGeneral === 'undefined') yGeneral = marginTop;
+
     // --- Section Title ---
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
@@ -705,12 +735,36 @@ async function drawSpecialQualifications(doc, application, type = 'general') {
     doc.text('Special Qualifications', marginLeft, titleY);
     addSpacing(doc, 8, type);
 
+    // --- Handle special qualifications content ---
     const fontSize = 11;
     const bullet = '• ';
 
-    specials.forEach(sq => {
-        doc.setFont('helvetica', 'normal');
-        drawWrappedText(doc, `${bullet}${sq.Description || ''}`, { x: marginLeft, fontSize, type });
+    // Prepare table rows with a single column for text (bullet point style)
+    const tableBody = specials.map(sq => {
+        const description = sq.Description || '';  // Ensure Description is a valid string
+        return [`${bullet} ${description.trim()}`]; // Add bullet point and trim spaces
+    });
+
+    if (!tableBody.length) {
+        console.log("Special Qualifications table body empty");
+        return;
+    }
+
+    const startY = type === 'academic' ? yAcademic : yGeneral;
+
+    // --- Add the table to the PDF ---
+    doc.autoTable({
+        body: tableBody,
+        startY,
+        margin: { left: marginLeft, right: marginRight },
+        styles: { font: 'helvetica', fontSize, cellPadding: 2, overflow: 'linebreak' },
+        headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0], fontStyle: 'bold' },
+        theme: 'grid',
+        didDrawPage: (data) => {
+            const nextY = data.cursor.y + 6;
+            if (type === 'academic') yAcademic = nextY;
+            else yGeneral = nextY;
+        }
     });
 
     // --- Extra spacing at the end of section ---
@@ -719,6 +773,7 @@ async function drawSpecialQualifications(doc, application, type = 'general') {
     // --- Divider line below section ---
     drawSectionLine(doc, type);
 }
+
 
 
 // ---------------------------
@@ -1149,18 +1204,70 @@ async function drawReferees(doc, application, type = 'academic') {
 // Additional Information
 // ---------------------------
 async function drawAdditionalInformation(doc, application, type = 'academic') {
-    const addInfo = application.additionalInformation;
+    let addInfo = application.additionalinfo;
+    console.log("additional information", addInfo);
+
+    // Check if there's additional info and ensure it's an array
+    if (!addInfo || !Array.isArray(addInfo)) return;
+
+    // Accessing the Content field in the first (and only) element
+    addInfo = addInfo[0].Content;
     if (!addInfo) return;
 
+    // Ensure Y-position initialized
+    if (typeof yAcademic === 'undefined') yAcademic = marginTop;
+    if (typeof yGeneral === 'undefined') yGeneral = marginTop;
+
+    // --- Section Title ---
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     const titleY = type === 'academic' ? yAcademic : yGeneral;
     doc.text('Additional Information', marginLeft, titleY);
     addSpacing(doc, 8, type);
 
-    drawWrappedText(doc, addInfo, { x: marginLeft, fontSize: 11, type });
-    addSpacing(doc, 6, type);
+    // If the content is not a string, treat it as one
+    if (Array.isArray(addInfo)) {
+        addInfo = addInfo.join('\n');  // If it's an array, join elements by newline
+    } else if (typeof addInfo !== 'string') {
+        console.log("Additional information is neither string nor array.");
+        return;
+    }
+
+    // --- Table layout for Additional Information ---
+    const bullet = '• ';
+    const fontSize = 11;
+
+    // Prepare table rows with a single column for text
+    const tableBody = addInfo.split('\n').map(infoLine => {
+        return [`${bullet} ${infoLine.trim()}`];  // Format each line as bullet point
+    });
+
+    if (!tableBody.length) {
+        console.log("Additional information table body empty");
+        return;
+    }
+
+    const startY = type === 'academic' ? yAcademic : yGeneral;
+
+    // --- Add the table to the PDF ---
+    doc.autoTable({
+        body: tableBody,
+        startY,
+        margin: { left: marginLeft, right: marginRight },
+        styles: { font: 'helvetica', fontSize, cellPadding: 2, overflow: 'linebreak' },
+        headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0], fontStyle: 'bold' },
+        theme: 'grid',
+        didDrawPage: (data) => {
+            const nextY = data.cursor.y + 6;
+            if (type === 'academic') yAcademic = nextY;
+            else yGeneral = nextY;
+        }
+    });
+
+    // --- Divider line safely ---
+    drawSectionLine(doc, type);
 }
+
 
 
 // ---------------------------
@@ -1229,8 +1336,6 @@ Official Seal
     // Update the Y pointer for the next section (academic)
     yAcademic = currentY;
 }
-
-
 
 
 
