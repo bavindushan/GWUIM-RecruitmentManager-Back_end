@@ -264,6 +264,17 @@ async function drawGeneralDetails(doc, application, type = 'general') {
 
     const details = application.applicationgeneraldetails;
 
+    // --- Calculate Age at Closing Date ---
+    const dob = new Date(details.DOB);  // Convert DOB to Date object
+    const closingDate = new Date();  // Use current system date directly
+
+    // Calculate age difference in years
+    const ageAtClosingDate = closingDate.getFullYear() - dob.getFullYear();
+    const monthDiff = closingDate.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && closingDate.getDate() < dob.getDate())) {
+        ageAtClosingDate--;  // Subtract a year if the birthday hasn't occurred yet in the year
+    }
+
     // --- Title ---
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
@@ -286,7 +297,8 @@ async function drawGeneralDetails(doc, application, type = 'general') {
     // --- Fields ---
     drawLabelValue('Post', application.jobvacancy?.Title || '');
     drawLabelValue('Full Name', details.FullName || '');
-    drawLabelValue('Address', details.PermanentAddress || '');
+    drawLabelValue('Permanent Address', details.PermanentAddress || '');
+    drawLabelValue('Present Address', details.PresentAddress || '');
 
     // --- Compact Phone + NIC ---
     let yLine = type === 'academic' ? yAcademic : yGeneral;
@@ -321,6 +333,15 @@ async function drawGeneralDetails(doc, application, type = 'general') {
     x += doc.getTextWidth('DOB: ');
     doc.setFont('helvetica', 'normal');
     doc.text(formatDate(details.DOB), x, yLine);
+    addSpacing(doc, 10, type);
+
+    // --- Age At Closing Date ---
+    x += doc.getTextWidth(details.Email || '') + 20;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Age At Closing Date: ', x, yLine);
+    x += doc.getTextWidth('Age At Closing Date: ');
+    doc.setFont('helvetica', 'normal');
+    doc.text(ageAtClosingDate.toString(), x, yLine);  // Age as number
     addSpacing(doc, 10, type);
 
     // --- Civil Status + Gender + Citizenship Type ---
@@ -386,9 +407,6 @@ async function drawGeneralDetails(doc, application, type = 'general') {
         // only update general Y pointer
         yGeneral = yLine + 10;
     }
-
-    // ✅ Draw section line correctly at the current Y
-    drawSectionLine(doc, type);
 }
 
 
