@@ -296,11 +296,12 @@ async function drawGeneralDetails(doc, application, type = 'general') {
 
     // --- Fields ---
     drawLabelValue('Post', application.jobvacancy?.Title || '');
+    drawLabelValue('Department', application.jobvacancy?.Department || '');
     drawLabelValue('Full Name', details.FullName || '');
     drawLabelValue('Permanent Address', details.PermanentAddress || '');
     drawLabelValue('Present Address', details.PresentAddress || '');
 
-    // --- Compact Phone + NIC ---
+    // --- Compact Phone + Email ---
     let yLine = type === 'academic' ? yAcademic : yGeneral;
     let x = marginLeft;
     doc.setFont('helvetica', 'bold');
@@ -312,31 +313,31 @@ async function drawGeneralDetails(doc, application, type = 'general') {
 
     x += doc.getTextWidth(details.PhoneNumber || '') + 15;
     doc.setFont('helvetica', 'bold');
-    doc.text('NIC: ', x, yLine);
-    x += doc.getTextWidth('NIC: ');
-    doc.setFont('helvetica', 'normal');
-    doc.text(details.NIC || '', x, yLine);
-    addSpacing(doc, 10, type);
-
-    // --- Email + DOB ---
-    yLine = type === 'academic' ? yAcademic : yGeneral;
-    x = marginLeft;
-    doc.setFont('helvetica', 'bold');
     doc.text('Email: ', x, yLine);
     x += doc.getTextWidth('Email: ');
     doc.setFont('helvetica', 'normal');
     doc.text(details.Email || '', x, yLine);
+    addSpacing(doc, 10, type);
 
-    x += doc.getTextWidth(details.Email || '') + 20;
+    // --- Email + NIC ---
+    yLine = type === 'academic' ? yAcademic : yGeneral;
+    x = marginLeft;
+    doc.setFont('helvetica', 'bold');
+    doc.text('NIC: ', x, yLine);
+    x += doc.getTextWidth('NIC: ');
+    doc.setFont('helvetica', 'normal');
+    doc.text(details.NIC || '', x, yLine);
+
+    x += doc.getTextWidth(details.Email || '') + 27;
     doc.setFont('helvetica', 'bold');
     doc.text('DOB: ', x, yLine);
     x += doc.getTextWidth('DOB: ');
     doc.setFont('helvetica', 'normal');
     doc.text(formatDate(details.DOB), x, yLine);
-    addSpacing(doc, 10, type);
+    //addSpacing(doc, 10, type);
 
     // --- Age At Closing Date ---
-    x += doc.getTextWidth(details.Email || '') + 20;
+    x += doc.getTextWidth(details.Email || '') + 5;
     doc.setFont('helvetica', 'bold');
     doc.text('Age At Closing Date: ', x, yLine);
     x += doc.getTextWidth('Age At Closing Date: ');
@@ -353,14 +354,14 @@ async function drawGeneralDetails(doc, application, type = 'general') {
     doc.setFont('helvetica', 'normal');
     doc.text(details.CivilStatus || '', x, yLine);
 
-    x += doc.getTextWidth(details.CivilStatus || '') + 30;
+    x += doc.getTextWidth(details.CivilStatus || '') + 32;
     doc.setFont('helvetica', 'bold');
     doc.text('Gender: ', x, yLine);
     x += doc.getTextWidth('Gender: ');
     doc.setFont('helvetica', 'normal');
     doc.text(details.Gender || '', x, yLine);
 
-    x += doc.getTextWidth(details.Gender || '') + 30;
+    x += doc.getTextWidth(details.Gender || '') + 20;
     doc.setFont('helvetica', 'bold');
     doc.text('Citizenship Type: ', x, yLine);
     x += doc.getTextWidth('Citizenship Type: ');
@@ -392,7 +393,7 @@ async function drawGeneralDetails(doc, application, type = 'general') {
         x += doc.getTextWidth('Chest: ');
         doc.setFont('helvetica', 'normal');
         doc.text(
-            `${details.ChestInches || ''} in:       (If you are applying for a security job, please fill this!)`,
+            `${details.ChestInches || ''} in:       (*If you are applying for a security job, please fill this!*)`,
             x,
             yLine
         );
@@ -407,6 +408,8 @@ async function drawGeneralDetails(doc, application, type = 'general') {
         // only update general Y pointer
         yGeneral = yLine + 10;
     }
+
+    drawSectionLine(doc, 'general');  // draw a line 
 }
 
 
@@ -1225,12 +1228,20 @@ async function drawAdditionalInformation(doc, application, type = 'academic') {
     let addInfo = application.additionalinfo;
     console.log("additional information", addInfo);
 
-    // Check if there's additional info and ensure it's an array
-    if (!addInfo || !Array.isArray(addInfo)) return;
+    // Check if additionalinfo exists and is an array
+    if (!addInfo || !Array.isArray(addInfo) || addInfo.length === 0) {
+        console.log("No additional information available");
+        return;  // Exit early if there is no additional information
+    }
 
-    // Accessing the Content field in the first (and only) element
+    // Accessing the Content field from the first element of additionalinfo
     addInfo = addInfo[0].Content;
-    if (!addInfo) return;
+    
+    // Ensure Content exists before proceeding
+    if (!addInfo) {
+        console.log("Content is undefined or null in additional information");
+        return;  // Exit early if there's no Content field
+    }
 
     // Ensure Y-position initialized
     if (typeof yAcademic === 'undefined') yAcademic = marginTop;
@@ -1285,6 +1296,7 @@ async function drawAdditionalInformation(doc, application, type = 'academic') {
     // --- Divider line safely ---
     drawSectionLine(doc, type);
 }
+
 
 
 
