@@ -640,7 +640,7 @@ async function drawEmploymentHistories(doc, application, type = 'general') {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     const titleY = type === 'academic' ? yAcademic : yGeneral;
-    doc.text('Employment Histories', marginLeft, titleY);
+    doc.text('Employment Details', marginLeft, titleY);
     addSpacing(doc, 8, type);
 
     // --- Prepare table rows from Prisma schema ---
@@ -696,7 +696,7 @@ async function drawExperiences(doc, application, type = 'general') {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     const titleY = type === 'academic' ? yAcademic : yGeneral;
-    doc.text('Experience Details', marginLeft, titleY);
+    doc.text('Experiences Related to the Job ', marginLeft, titleY);
     addSpacing(doc, 8, type);
 
     // --- Handle experience details content ---
@@ -755,7 +755,7 @@ async function drawSpecialQualifications(doc, application, type = 'general') {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     const titleY = type === 'academic' ? yAcademic : yGeneral;
-    doc.text('Special Qualifications', marginLeft, titleY);
+    doc.text(' Special Qualifications / Extra-curricular ', marginLeft, titleY);
     addSpacing(doc, 8, type);
 
     // --- Handle special qualifications content ---
@@ -830,14 +830,16 @@ Signature of the applicant:……………………………………………�
 
     // Bold specific sentence (For Public Sector Candidates Only)
     doc.setFont('helvetica', 'bold');
-    const boldSentence = "For Public Sector Candidates Only.";
-    currentY = drawWrappedText(doc, boldSentence, { x: marginLeft + 50, y: currentY, fontSize: 12, returnY: true });
+    const boldSentence = "For Public Sector / Semi Government Candidates Only";
+    currentY = drawWrappedText(doc, boldSentence, { x: marginLeft + 20, y: currentY, fontSize: 12, returnY: true });
 
     // Back to normal text
     doc.setFont('helvetica', 'normal');
     const certificationText2 = `
 Application for the post of…………………………………………………………………………………
-submitted by Mr./  Mrs./  Ms ……………………………………………………………………………………………………………………………………………………………………………………………………………………is forwarded here with. If he/she is selected for the said post he/she can/cannot be released.
+submitted by Mr./  Mrs./  Ms ……………………………………………………………………………………………………………………………………………………………………………………………………………………is forwarded here with. I certify that all the details filled in the application are correct according to the personal file. If he/she is selected for the said post, he/she can/cannot be released.
+
+
 
 Signature of the Head of the Institution
 
@@ -890,6 +892,8 @@ async function generateNonAcademicApplicationPDF(applicationID, application) {
     await drawExperiences(doc, application, 'general');
     //Special Qualifications 
     await drawSpecialQualifications(doc, application, 'general');
+    //Referees
+    await drawReferees(doc, application, 'general');
 
     //Static Section for signing to applicant
     await drawSignSection(doc, application, 'general')
@@ -1136,7 +1140,7 @@ async function drawResearchAndPublication(doc, application, type = 'academic') {
     });
 
     // --- Optional bottom note ---
-    const bottomNote = "Please Attach as Annexures";
+    const bottomNote = "(*Please Attach as Annexures!*)";
     drawWrappedText(doc, bottomNote, { x: marginLeft, fontSize, type, returnY: false });
     addSpacing(doc, 4, type);
 
