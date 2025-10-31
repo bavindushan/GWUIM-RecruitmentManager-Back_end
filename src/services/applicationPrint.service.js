@@ -189,8 +189,8 @@ function drawStaticHeader(doc, mapping = {}, applicationType, application) {
 
     // --- Logo (centered) ---
     const logoPath = path.join(__dirname, '..', 'utils', 'assets', 'university_logo.png');
-    const logoW = mapping?.logo?.width ?? 20;
-    const logoH = mapping?.logo?.height ?? 20;
+    const logoW = mapping?.logo?.width ?? 25;
+    const logoH = mapping?.logo?.height ?? 25;
     let logoY = mapping?.logo?.y ?? pageTop;
 
     if (fs.existsSync(logoPath)) {
@@ -328,7 +328,7 @@ async function drawGeneralDetails(doc, application, type = 'general') {
     doc.setFont('helvetica', 'normal');
     doc.text(details.NIC || '', x, yLine);
 
-    x += doc.getTextWidth(details.Email || '') + 27;
+    x += doc.getTextWidth(details.NIC || '') + 32;
     doc.setFont('helvetica', 'bold');
     doc.text('DOB: ', x, yLine);
     x += doc.getTextWidth('DOB: ');
@@ -337,7 +337,7 @@ async function drawGeneralDetails(doc, application, type = 'general') {
     //addSpacing(doc, 10, type);
 
     // --- Age At Closing Date ---
-    x += doc.getTextWidth(details.Email || '') + 5;
+    x += doc.getTextWidth(details.DOB || '') + 20;
     doc.setFont('helvetica', 'bold');
     doc.text('Age At Closing Date: ', x, yLine);
     x += doc.getTextWidth('Age At Closing Date: ');
@@ -421,6 +421,8 @@ async function drawGeneralDetails(doc, application, type = 'general') {
 // ---------------------------
 async function drawOLResults(doc, application, type = 'general') {
     const results = application.gce_ol_results;
+    console.log("O/L results Print:",results);
+    
     if (!results || results.length === 0) return;
 
     doc.setFont('helvetica', 'bold');

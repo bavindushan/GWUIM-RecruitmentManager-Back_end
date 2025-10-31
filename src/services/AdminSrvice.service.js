@@ -11,7 +11,7 @@ exports.getAllJobs = async () => {
     const jobs = await prisma.jobvacancy.findMany({
         select: {
             JobID: true,
-            Title: true
+            Title: true,
         },
         orderBy: {
             Title: 'asc'

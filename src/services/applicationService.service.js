@@ -819,6 +819,7 @@ exports.submitGceOlResults = async (userId, jobId, olResults) => {
     // 2. Prepare O/L result records
     const recordsToInsert = olResults.map(result => ({
         ApplicationID: application.ApplicationID,
+        ExamYear: result.ExamYear ? parseInt(result.ExamYear) : null, // ✅ include year
         Subject: result.Subject,
         Grade: result.Grade,
     }));
@@ -830,6 +831,7 @@ exports.submitGceOlResults = async (userId, jobId, olResults) => {
 
     return createdResults;
 };
+
 
 // Save GCE A/L results for an application
 exports.submitGceAlResults = async (userId, jobId, alResults) => {
@@ -852,6 +854,7 @@ exports.submitGceAlResults = async (userId, jobId, alResults) => {
     // 2. Prepare A/L result records
     const recordsToInsert = alResults.map(result => ({
         ApplicationID: application.ApplicationID,
+        ExamYear: result.ExamYear ? parseInt(result.ExamYear) : null, // ✅ include year
         Subject: result.Subject,
         Grade: result.Grade,
     }));
@@ -863,6 +866,7 @@ exports.submitGceAlResults = async (userId, jobId, alResults) => {
 
     return { message: `${created.count} A/L results submitted successfully.` };
 };
+
 
 // Submit General Details for an application
 exports.submitGeneralDetails = async (userId, jobId, generalDetails) => {
