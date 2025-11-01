@@ -253,6 +253,25 @@ exports.submitSpecialQualifications = catchAsync(async (req, res, next) => {
     });
 });
 
+// Submit Academic Distinctions
+exports.submitAcademicDistinctions = catchAsync(async (req, res, next) => {
+    const userId = req.user?.id;
+    const { jobId, academicDistinctions } = req.body;
+
+    if (!jobId || !Array.isArray(academicDistinctions) || academicDistinctions.length === 0) {
+        throw new BadRequestError('Job ID and a non-empty academicDistinctions array are required.');
+    }
+
+    const result = await applicationService.submitAcademicDistinctions(userId, jobId, academicDistinctions);
+
+    res.status(201).json({
+        status: 'success',
+        message: 'Academic distinctions submitted successfully.',
+        data: result,
+    });
+});
+
+
 // Submit Research and Publications
 exports.submitResearchAndPublications = catchAsync(async (req, res, next) => {
     const userId = req.user?.id;

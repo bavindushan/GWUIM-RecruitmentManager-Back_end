@@ -40,6 +40,7 @@ model application {
   SubmissionDate             DateTime?                    @db.Date
   Status                     application_Status?          @default(New)
   Remarks                    String?                      @db.Text
+  academicdistinctions       academicdistinctions[]
   additionalinfo             additionalinfo[]
   user                       user?                        @relation(fields: [UserID], references: [UserID], onDelete: Cascade, onUpdate: NoAction, map: "application_ibfk_1")
   jobvacancy                 jobvacancy?                  @relation(fields: [JobID], references: [JobID], onDelete: Cascade, onUpdate: NoAction, map: "application_ibfk_2")
@@ -314,6 +315,15 @@ model firstdegreesubjects {
 
   @@index([UniversityEducationID], map: "UniversityEducationID")
   @@map("firstdegreesubjects")
+}
+
+model academicdistinctions {
+  DistinctionID Int         @id @default(autoincrement())
+  ApplicationID Int
+  Description   String      @db.Text
+  application   application @relation(fields: [ApplicationID], references: [ApplicationID], onDelete: Cascade, onUpdate: NoAction, map: "academicdistinctions_ibfk_1")
+
+  @@index([ApplicationID], map: "ApplicationID")
 }
 
 enum applicationtemplate_Type {

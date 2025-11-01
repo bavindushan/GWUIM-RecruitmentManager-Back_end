@@ -589,6 +589,44 @@ router.post( '/special-qualifications', authMiddleware, asyncHandler(application
 
 /**
  * @swagger
+ * /api/applications/academic-distinctions:
+ *   post:
+ *     summary: Submit academic distinctions for an application
+ *     description: Allows a logged-in user to submit one or more academic distinction records under a specific job application.
+ *     tags:
+ *       - Applications
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               jobId:
+ *                 type: integer
+ *                 example: 1
+ *               academicDistinctions:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     Description:
+ *                       type: string
+ *                       example: "Best Research Paper Award - 2022"
+ *     responses:
+ *       201:
+ *         description: Academic distinctions submitted successfully
+ *       400:
+ *         description: Bad request - missing or invalid fields
+ *       401:
+ *         description: Unauthorized - user not logged in
+ */
+router.post( '/academic-distinctions', authMiddleware, asyncHandler(applicationController.submitAcademicDistinctions));
+
+/**
+ * @swagger
  * /api/applications/research-and-publications:
  *   post:
  *     summary: Submit research and publications for an application

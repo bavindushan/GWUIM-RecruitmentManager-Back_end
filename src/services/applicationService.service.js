@@ -213,6 +213,7 @@ exports.getAllApplications = async () => {
             languageproficiencies: true,
             secondaryeducations: true,
             specialqualifications: true,
+            academicdistinctions: true,
         },
         orderBy: {
             SubmissionDate: "desc",
@@ -246,6 +247,8 @@ exports.getAllApplications = async () => {
         languageproficiencies: app.languageproficiencies || [],
         secondaryeducations: app.secondaryeducations || [],
         specialqualifications: app.specialqualifications || [],
+        academicdistinctions: app.academicdistinctions || [],
+
     }));
 };
 
@@ -564,6 +567,38 @@ exports.submitSpecialQualifications = async (userId, jobId, specialQualification
 
     return createdRecords;
 };
+
+// Submit Academic Distinctions
+exports.submitAcademicDistinctions = async (userId, jobId, academicDistinctions) => {
+    if (!Array.isArray(academicDistinctions) || academicDistinctions.length === 0) {
+        throw new BadRequestError('Academic distinctions must be provided as a non-empty array.');
+    }
+
+    // Find the related application
+    const application = await prisma.application.findFirst({
+        where: {
+            UserID: userId,
+            JobID: jobId,
+        },
+    });
+
+    if (!application) {
+        throw new NotFoundError('No application found for the given user and job.');
+    }
+
+    // Map and insert distinctions
+    const recordsToInsert = academicDistinctions.map(dist => ({
+        ApplicationID: application.ApplicationID,
+        Description: dist.Description,
+    }));
+
+    const createdRecords = await prisma.academicdistinctions.createMany({
+        data: recordsToInsert,
+    });
+
+    return createdRecords;
+};
+
 
 // Submit Research and Publications
 exports.submitResearchAndPublications = async (userId, jobId, publications) => {

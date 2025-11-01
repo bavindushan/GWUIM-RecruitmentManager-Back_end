@@ -161,6 +161,7 @@ exports.getApplicationByID = async (applicationID) => {
             professionalqualifications: true,
             researchandpublications: true,
             specialqualifications: true,
+            academicdistinctions: true,
             universityeducations: {
                 include: {
                     firstdegreesubjects: true,
