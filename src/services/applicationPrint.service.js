@@ -23,7 +23,7 @@ function drawSectionLine(doc, type = 'general', lineWidth = 0.5, spacing = 6) {
     const pageW = getPageWidth(doc);
 
     // Use the Y pointer of the current type
-    const y = type === 'academic' ? yAcademic : yGeneral;
+    let y = type === 'academic' ? yAcademic : yGeneral;
 
     doc.setLineWidth(lineWidth);
     doc.setDrawColor(0, 0, 0); // black line
@@ -107,7 +107,7 @@ function getPageWidth(doc) {
 // Ensure there's enough space on the current page for extraHeight; if not, add a new page and reset Y
 function ensureSpace(doc, extraHeight = 40, type = 'general') {
     const pageH = getPageHeight(doc);
-    const y = type === 'academic' ? yAcademic : yGeneral;
+    let y = type === 'academic' ? yAcademic : yGeneral;
     const bottomLimit = pageH - 25; // leave some bottom margin
     if (y + extraHeight > bottomLimit) {
         doc.addPage();
@@ -189,7 +189,7 @@ function drawStaticHeader(doc, mapping = {}, applicationType, application) {
 
     // --- Logo (centered) ---
     const logoPath = path.join(__dirname, '..', 'utils', 'assets', 'university_logo.png');
-    const logoW = mapping?.logo?.width ?? 25;
+    const logoW = mapping?.logo?.width ?? 20;
     const logoH = mapping?.logo?.height ?? 25;
     let logoY = mapping?.logo?.y ?? pageTop;
 
@@ -208,8 +208,10 @@ function drawStaticHeader(doc, mapping = {}, applicationType, application) {
     const lineSpacing = 6;
     let currentY = logoY + logoH + lineSpacing;
 
-    const uniTitle = mapping?.universityTitle?.text ??
+    const uniTitle =
+        mapping?.universityTitle?.text ??
         'Gampaha Wickramarachchi University of Indigenous Medicine, Sri Lanka';
+
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
     const uniTitleWidth = doc.getTextWidth(uniTitle);
@@ -217,9 +219,13 @@ function drawStaticHeader(doc, mapping = {}, applicationType, application) {
 
     // --- Form Title ---
     currentY += 10;
-    const formTitleText = (mapping?.formTitle && typeof mapping.formTitle.text === 'string')
-        ? mapping.formTitle.text
-        : (applicationType === 'Academic' ? 'Academic Application' : 'Non Academic Application');
+    const formTitleText =
+        (mapping?.formTitle && typeof mapping.formTitle.text === 'string')
+            ? mapping.formTitle.text
+            : (applicationType === 'Academic'
+                ? 'Academic Application'
+                : 'Non Academic Application');
+
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(12);
     const formTitleWidth = doc.getTextWidth(formTitleText);
@@ -230,28 +236,39 @@ function drawStaticHeader(doc, mapping = {}, applicationType, application) {
     let infoY = pageTop + 6;
     doc.setFontSize(10);
 
+    // Application ID
     doc.setFont('helvetica', 'bold');
     doc.text('Application ID:', rightX, infoY);
     doc.setFont('helvetica', 'normal');
     doc.text(String(application.ApplicationID || ''), rightX + 34, infoY);
 
+    // Job ID
     infoY += 6;
     doc.setFont('helvetica', 'bold');
     doc.text('Job ID:', rightX, infoY);
     doc.setFont('helvetica', 'normal');
     doc.text(String(application.jobvacancy?.JobID || ''), rightX + 34, infoY);
 
+    // Closing Date
     infoY += 6;
     doc.setFont('helvetica', 'bold');
     doc.text('Closing Date:', rightX, infoY);
     doc.setFont('helvetica', 'normal');
     doc.text(formatDate(application.jobvacancy?.ExpiryDate), rightX + 34, infoY);
 
+    // Printed On
+    infoY += 6;
+    const printedAt = new Date();
+    const printedStr = `Printed on: ${printedAt.toLocaleDateString()} ${printedAt.toLocaleTimeString()}`;
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(8);
+    doc.text(printedStr, rightX, infoY);
+
     // --- Set Y positions for content below header ---
-    yGeneral = currentY + 15;
+    yGeneral = currentY + 20; 
     yAcademic = yGeneral;
 
-    // Draw separating line below header
+    // --- Draw separating line below header ---
     drawSectionLine(doc, applicationType === 'Academic' ? 'academic' : 'general');
 }
 
@@ -269,7 +286,7 @@ async function drawGeneralDetails(doc, application, type = 'general') {
     const closingDate = new Date();  // Use current system date directly
 
     // Calculate age difference in years
-    const ageAtClosingDate = closingDate.getFullYear() - dob.getFullYear();
+    let ageAtClosingDate = closingDate.getFullYear() - dob.getFullYear();
     const monthDiff = closingDate.getMonth() - dob.getMonth();
     if (monthDiff < 0 || (monthDiff === 0 && closingDate.getDate() < dob.getDate())) {
         ageAtClosingDate--;  // Subtract a year if the birthday hasn't occurred yet in the year
@@ -284,7 +301,7 @@ async function drawGeneralDetails(doc, application, type = 'general') {
 
     // Helper for label + value
     const drawLabelValue = (label, value, x = marginLeft) => {
-        const y = type === 'academic' ? yAcademic : yGeneral;
+        let y = type === 'academic' ? yAcademic : yGeneral;
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.text(`${label}: `, x, y);
